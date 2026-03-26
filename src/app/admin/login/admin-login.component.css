@@ -1,0 +1,236 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+.admin-login-wrap {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f1a 100%);
+  background-image: radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, rgba(0,0,0,0.9) 100%),
+                    url('https://www.transparenttextures.com/patterns/stardust.png');
+  background-size: cover;
+  background-position: center;
+  font-family: 'Playfair Display', serif;
+  overflow: hidden; /* No scroll strictly enforced */
+  z-index: 10000;
+}
+
+.admin-login-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%);
+  pointer-events: none;
+}
+
+/* Smoke & Dust layers */
+.mist-layer {
+  position: absolute;
+  inset: 0;
+  background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+  opacity: 0.1;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+
+.ritual-container {
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: fade-in 2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; filter: blur(10px); }
+  to { opacity: 1; filter: blur(0); }
+}
+
+.ancient-logo {
+  font-family: 'Cinzel', serif;
+  font-size: 4rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
+  margin-bottom: 0.5rem;
+  letter-spacing: 12px;
+  position: relative;
+}
+
+.ancient-logo::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #fff, transparent);
+}
+
+.ritual-subtitle {
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #94a3b8;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 4rem;
+  opacity: 0.7;
+}
+
+.ritual-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.ritual-field {
+  position: relative;
+  width: 100%;
+}
+
+.ritual-field label {
+  position: absolute;
+  top: -24px;
+  left: 0;
+  font-size: 0.7rem;
+  font-family: 'Cinzel', serif;
+  color: #8b5cf6;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.4s;
+}
+
+.ritual-field.active label,
+.ritual-field input:not(:placeholder-shown) + label {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ritual-field input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 1rem 0.5rem;
+  color: #fff;
+  font-size: 1.1rem;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.5s;
+}
+
+.ritual-field input:focus {
+  border-bottom-color: #8b5cf6;
+  box-shadow: 0 8px 15px -10px rgba(139, 92, 246, 0.3);
+}
+
+.ritual-field .field-glow {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: #a78bfa;
+  box-shadow: 0 0 15px #a78bfa;
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateX(-50%);
+}
+
+.ritual-field input:focus ~ .field-glow {
+  width: 100%;
+}
+
+.ritual-error {
+  color: #fca5a5;
+  font-size: 0.85rem;
+  font-style: italic;
+  text-align: center;
+  margin-top: -1rem;
+  animation: shake 0.4s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.ritual-btn {
+  background: transparent;
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  padding: 1.2rem;
+  color: #fff;
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  cursor: pointer;
+  margin-top: 2rem;
+  position: relative;
+  transition: all 0.5s;
+  overflow: hidden;
+}
+
+.ritual-btn span { position: relative; z-index: 2; }
+
+.ritual-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.2), rgba(139, 92, 246, 0.2));
+  opacity: 0;
+  transition: all 0.5s;
+}
+
+.ritual-btn:hover {
+  border-color: #a78bfa;
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
+  letter-spacing: 6px;
+}
+
+.ritual-btn:hover::before { opacity: 1; }
+
+.ritual-btn:disabled {
+  opacity: 0.3;
+  cursor: wait;
+}
+
+.ritual-footer {
+  margin-top: 5rem;
+  padding-top: 2rem;
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 5px;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+  opacity: 0.8;
+}
+
+/* Loading Ethereal Spinner */
+.ethereal-loader {
+  width: 30px;
+  height: 30px;
+  border: 1px solid transparent;
+  border-top-color: #a78bfa;
+  border-radius: 50%;
+  animation: ethereal-spin 2s linear infinite;
+  box-shadow: 0 -5px 15px -5px #a78bfa;
+}
+
+@keyframes ethereal-spin {
+  to { transform: rotate(360deg) scale(1.2); opacity: 0.5; }
+}

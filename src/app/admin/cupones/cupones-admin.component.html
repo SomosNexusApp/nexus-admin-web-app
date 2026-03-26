@@ -1,0 +1,387 @@
+<div class="admin-page cupones-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><i class="fa-solid fa-ticket"></i> Cupones de Descuento</h1>
+      <p class="page-subtitle">Gestión de campañas promocionales y fidelización</p>
+    </div>
+    <button class="btn-primary" (click)="openNew()">
+      <i class="fa-solid fa-plus"></i> Nuevo Cupón
+    </button>
+  </div>
+
+  <!-- STATS CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-toggle-on"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Cupones Activos</span>
+        <span class="stat-value">{{ stats()?.activos || 0 }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon pulse"><i class="fa-solid fa-bolt"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Usos este mes</span>
+        <span class="stat-value">{{ stats()?.usosMes || 0 }}</span>
+      </div>
+    </div>
+    <div class="stat-card accent">
+      <div class="stat-icon"><i class="fa-solid fa-piggy-bank"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Ahorro Generado</span>
+        <span class="stat-value">{{ stats()?.ahorroTotal || 0 | currency:'EUR' }}</span>
+      </div>
+    </div>
+    <div class="stat-card highlight">
+      <div class="stat-icon"><i class="fa-solid fa-trophy"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Cupón más usado</span>
+        <span class="stat-value small">{{ stats()?.masUsado || 'N/A' }}</span>
+        <span class="stat-sub">{{ stats()?.numUsos || 0 }} usos</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="tabs-filters">
+      <button class="tab-btn" [class.active]="tabActiva === 'activos'" (click)="tabActiva = 'activos'; page = 0; loadCupones()">Activos</button>
+      <button class="tab-btn" [class.active]="tabActiva === 'caducados'" (click)="tabActiva = 'caducados'; page = 0; loadCupones()">Caducados</button>
+      <button class="tab-btn" [class.active]="tabActiva === 'desactivados'" (click)="tabActiva = 'desactivados'; page = 0; loadCupones()">Desactivados</button>
+      <button class="tab-btn" [class.active]="tabActiva === 'todos'" (click)="tabActiva = 'todos'; page = 0; loadCupones()">Todos</button>
+    </div>
+  </div>
+
+  <div class="admin-card">
+    <div class="table-wrap">
+      @if (loading()) {
+        <div class="loading-overlay"><i class="fa-solid fa-spinner fa-spin"></i></div>
+      }
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Descuento</th>
+            <th>Límites</th>
+            <th>Vigencia</th>
+            <th>Alcance</th>
+            <th>Estado</th>
+            <th class="text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of result()?.content || []; track c.id) {
+            <tr class="clickable-row">
+              <td>
+                <div class="code-cell">
+                  <span class="coupon-code">{{ c.codigo }}</span>
+                  <button class="copy-btn" (click)="copyToClipboard(c.codigo)" [class.copied]="copiedCode() === c.codigo">
+                    <i [class]="copiedCode() === c.codigo ? 'fa-solid fa-check' : 'fa-regular fa-copy'"></i>
+                  </button>
+                </div>
+              </td>
+              <td>
+                <div class="discount-info">
+                  <span class="main-val">
+                    @if (c.tipo === 'PORCENTAJE') { {{ c.valor }}% }
+                    @else if (c.tipo === 'FIJO') { {{ c.valor | currency:'EUR' }} }
+                    @else { Envío Gratis }
+                  </span>
+                  @if (c.topeMaximo) { <span class="sub-val">Tope: {{ c.topeMaximo | currency:'EUR' }}</span> }
+                </div>
+              </td>
+              <td>
+                <div class="limits-info">
+                  <span class="limit-row">Usos: <strong>{{ c.totalUsos }}</strong> / {{ c.limiteUsoTotal || '∞' }}</span>
+                  @if (c.importeMinimo) { <span class="limit-row">Mín: {{ c.importeMinimo | currency:'EUR' }}</span> }
+                </div>
+              </td>
+              <td>
+                <div class="validity-info" [class.is-caducado]="c.fechaFin && !!c.fechaFin">
+                  <span class="valid-date">{{ c.fechaInicio | date:'dd/MM/yy' }}</span>
+                  <i class="fa-solid fa-arrow-right"></i>
+                  <span class="valid-date">{{ c.fechaFin ? (c.fechaFin | date:'dd/MM/yy') : '∞' }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="scope-badge" [ngClass]="c.alcance.toLowerCase()">
+                   {{ c.alcance === 'USUARIO' ? '@' + (c.usuario ? c.usuario.user : 'Usuario') : 
+                      c.alcance === 'GRUPO' ? c.grupoObjetivo : 'Todos' }}
+                </span>
+              </td>
+              <td>
+                <span class="status-dot" [class.active]="c.activo" [title]="c.activo ? 'Activo' : 'Desactivado'"></span>
+              </td>
+              <td class="text-right actions-cell">
+                <button class="action-btn" (click)="openUsos(c)" title="Ver usos"><i class="fa-solid fa-chart-line"></i></button>
+                <button class="action-btn" (click)="openEdit(c)" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                @if (c.activo) {
+                  <button class="action-btn warn" (click)="confirmDesactivar(c)" title="Desactivar"><i class="fa-solid fa-power-off"></i></button>
+                } @else {
+                  <button class="action-btn success" (click)="reactivar(c)" title="Reactivar"><i class="fa-solid fa-play"></i></button>
+                }
+                <button class="action-btn danger" [disabled]="c.totalUsos > 0" (click)="eliminar(c)" [title]="c.totalUsos > 0 ? 'No se puede eliminar un cupón usado' : 'Eliminar'"><i class="fa-solid fa-trash"></i></button>
+              </td>
+            </tr>
+          } @empty {
+             <tr><td colspan="7" class="empty-row">No hay cupones que coincidan con la vista seleccionada</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL STEPPER (NUEVO/EDITAR) -->
+@if (showModal()) {
+  <div class="modal-overlay">
+    <div class="modal-stepper">
+      <div class="modal-header">
+        <h2>{{ isNew ? 'Crear Nuevo Cupón' : 'Editar Cupón' }}</h2>
+        <div class="stepper-indicator">
+          <div class="step-dot" [class.active]="step >= 1">1</div>
+          <div class="step-line" [class.active]="step >= 2"></div>
+          <div class="step-dot" [class.active]="step >= 2">2</div>
+          <div class="step-line" [class.active]="step >= 3"></div>
+          <div class="step-dot" [class.active]="step >= 3">3</div>
+        </div>
+        <button class="close-btn" (click)="showModal.set(false)"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- PASO 1: CONFIGURACIÓN BÁSICA -->
+        @if (step === 1) {
+          <div class="step-content">
+            <div class="form-section">
+              <label>Código del Cupón</label>
+              <div class="input-with-action">
+                <input type="text" [(ngModel)]="form.codigo" (ngModelChange)="onCodigoChange()" placeholder="EJ: NEXUS20" [disabled]="!isNew" class="fancy-input uppercase">
+                @if (isNew) { <button class="btn-secondary" (click)="generarAleatorio()">Generar</button> }
+              </div>
+              @if (isNew) {
+                <div class="validation-label" [class.available]="codigoDisponible() === true" [class.taken]="codigoDisponible() === false">
+                  @if (codigoDisponible() === true) { <i class="fa-solid fa-check"></i> Disponible }
+                  @if (codigoDisponible() === false) { <i class="fa-solid fa-xmark"></i> Ya existe }
+                </div>
+              }
+            </div>
+
+            <div class="form-section">
+              <label>Tipo de Descuento</label>
+              <div class="radio-group-cards">
+                <div class="radio-card" [class.selected]="form.tipo === 'PORCENTAJE'" (click)="form.tipo = 'PORCENTAJE'">
+                  <i class="fa-solid fa-percent"></i> <span>Porcentual</span>
+                </div>
+                <div class="radio-card" [class.selected]="form.tipo === 'FIJO'" (click)="form.tipo = 'FIJO'">
+                  <i class="fa-solid fa-euro-sign"></i> <span>Fijo</span>
+                </div>
+                <div class="radio-card" [class.selected]="form.tipo === 'ENVIO_GRATIS'" (click)="form.tipo = 'ENVIO_GRATIS'">
+                  <i class="fa-solid fa-truck"></i> <span>Envío Gratis</span>
+                </div>
+              </div>
+            </div>
+
+            @if (form.tipo !== 'ENVIO_GRATIS') {
+              <div class="form-section">
+                <label>Valor del Descuento ({{ form.tipo === 'PORCENTAJE' ? '%' : '€' }})</label>
+                <input type="number" [(ngModel)]="form.valor" class="fancy-input">
+              </div>
+            }
+
+            <div class="form-grid">
+               <div class="form-section">
+                 <div class="label-with-toggle">
+                   <label>Importe Mínimo</label>
+                   <div class="toggle-sm"><input type="checkbox" [(ngModel)]="form.requiereMinimo"></div>
+                 </div>
+                 <input type="number" [(ngModel)]="form.importeMinimo" [disabled]="!form.requiereMinimo" class="fancy-input" placeholder="€">
+               </div>
+               @if (form.tipo === 'PORCENTAJE') {
+                 <div class="form-section">
+                   <div class="label-with-toggle">
+                     <label>Tope Descuento</label>
+                     <div class="toggle-sm"><input type="checkbox" [(ngModel)]="form.limitarTope"></div>
+                   </div>
+                   <input type="number" [(ngModel)]="form.topeMaximo" [disabled]="!form.limitarTope" class="fancy-input" placeholder="€">
+                 </div>
+               }
+            </div>
+          </div>
+        }
+
+        <!-- PASO 2: ALCANCE Y LÍMITES -->
+        @if (step === 2) {
+          <div class="step-content">
+            <div class="form-section">
+              <label>Alcance del Cupón</label>
+              <select [(ngModel)]="form.alcance" class="fancy-input">
+                <option value="TODOS">Todos los usuarios</option>
+                <option value="USUARIO">Usuario específico</option>
+                <option value="GRUPO">Grupo de usuarios</option>
+              </select>
+            </div>
+
+            @if (form.alcance === 'USUARIO') {
+              <div class="form-section autocomplete-wrap">
+                <label>Buscar Usuario</label>
+                <input type="text" [(ngModel)]="usuariosSearchValue" (ngModelChange)="onUserSearch()" placeholder="Escribe username..." class="fancy-input">
+                @if (usuariosSugeridos().length > 0) {
+                  <div class="results-dropdown">
+                    @for (u of usuariosSugeridos(); track u.id) {
+                      <div class="result-item" (click)="selectUsuario(u)">
+                        <img [src]="u.avatar || 'assets/default-avatar.png'" class="mini-avatar">
+                        <span>{{ u.user }}</span>
+                      </div>
+                    }
+                  </div>
+                }
+                @if (form.usuario) {
+                  <div class="selected-user-tag">Cupón para: <strong>@{{ form.usuario.user }}</strong></div>
+                }
+              </div>
+            }
+
+            @if (form.alcance === 'GRUPO') {
+              <div class="form-section">
+                <label>Seleccionar Grupo</label>
+                <select [(ngModel)]="form.grupoObjetivo" class="fancy-input">
+                  <option value="NUEVOS_USUARIOS">Nuevos Usuarios (< 30 días)</option>
+                  <option value="CON_COMPRA_PREVIA">Con compra previa</option>
+                  <option value="PREMIUM">Usuarios Premium / Empresa</option>
+                </select>
+              </div>
+            }
+
+            <div class="form-grid">
+               <div class="form-section">
+                 <div class="label-with-toggle">
+                   <label>Límite Usos Total</label>
+                   <div class="toggle-sm">Sin límite <input type="checkbox" [(ngModel)]="form.ilimitado"></div>
+                 </div>
+                 <input type="number" [(ngModel)]="form.limiteUsoTotal" [disabled]="form.ilimitado" class="fancy-input">
+               </div>
+               <div class="form-section">
+                 <label>Usos por Usuario</label>
+                 <select [(ngModel)]="form.limiteUsoPorUsuario" class="fancy-input">
+                    <option [ngValue]="1">1 uso</option>
+                    <option [ngValue]="2">2 usos</option>
+                    <option [ngValue]="5">5 usos</option>
+                    <option [ngValue]="null">Ilimitados</option>
+                 </select>
+               </div>
+            </div>
+
+            <div class="form-grid">
+               <div class="form-section">
+                 <label>Válido desde</label>
+                 <input type="datetime-local" [(ngModel)]="form.fechaInicio" class="fancy-input">
+               </div>
+               <div class="form-section">
+                 <div class="label-with-toggle">
+                   <label>Válido hasta</label>
+                   <div class="toggle-sm">∞ <input type="checkbox" [(ngModel)]="form.sinCaducidad"></div>
+                 </div>
+                 <input type="datetime-local" [(ngModel)]="form.fechaFin" [disabled]="form.sinCaducidad" class="fancy-input">
+               </div>
+            </div>
+
+            <div class="form-section">
+               <div class="label-with-toggle">
+                 <label>Categorías Aplicables</label>
+                 <div class="toggle-sm">Todas <input type="checkbox" [(ngModel)]="form.todasCategorias"></div>
+               </div>
+               @if (!form.todasCategorias) {
+                 <div class="cat-selector-box">
+                    @for (cat of categoriasArbol(); track cat.id) {
+                      <div class="cat-check-item">
+                        <input type="checkbox" [checked]="form.categoriasIds.includes(cat.id)" (change)="toggleCategoria(cat.id)">
+                        <span>{{ cat.nombre }}</span>
+                      </div>
+                    }
+                 </div>
+               }
+            </div>
+          </div>
+        }
+
+        <!-- PASO 3: AUDITORÍA -->
+        @if (step === 3) {
+          <div class="step-content">
+             <div class="info-alert">
+               <i class="fa-solid fa-circle-info"></i>
+               <p>Este paso es para registro interno. La descripción solo es visible para moderadores y administradores.</p>
+             </div>
+             <div class="form-section">
+               <label>Motivo o Descripción de la Campaña</label>
+               <textarea [(ngModel)]="form.descripcionInterna" rows="6" class="fancy-input" placeholder="Ej: Bonos de bienvenida para nuevos usuarios de la app móvil..."></textarea>
+               <span class="char-counter">{{ form.descripcionInterna.length }} / 10 mín.</span>
+             </div>
+
+             <div class="summary-card">
+               <h4>Resumen del Cupón</h4>
+               <div class="summary-row"><span>Código:</span> <strong>{{ form.codigo }}</strong></div>
+               <div class="summary-row"><span>Descuento:</span> <strong>{{ form.valor }} {{ form.tipo === 'PORCENTAJE' ? '%' : '€' }}</strong></div>
+               <div class="summary-row"><span>Alcance:</span> <span>{{ form.alcance }}</span></div>
+             </div>
+          </div>
+        }
+
+      </div>
+
+      <div class="modal-footer">
+        @if (step > 1) { <button class="btn-ghost" (click)="prevStep()">Anterior</button> }
+        <div class="spacer"></div>
+        @if (step < 3) {
+          <button class="btn-primary" [disabled]="step === 1 && (form.codigo.length < 4 || (isNew && codigoDisponible() !== true))" (click)="nextStep()">Siguiente</button>
+        } @else {
+          <button class="btn-success" [disabled]="form.descripcionInterna.length < 10" (click)="save()">
+            {{ isNew ? 'Crear Cupón' : 'Guardar Cambios' }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL USOS -->
+@if (showUsosModal() && selectedCuponForUsos()) {
+  <div class="modal-overlay">
+    <div class="modal-wide">
+      <div class="modal-header">
+        <h2>Usos del Cupón: <span>{{ selectedCuponForUsos()!.codigo }}</span></h2>
+        <button class="close-btn" (click)="showUsosModal.set(false)"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="usos-table-wrap">
+          <table class="admin-table mini">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Fecha</th>
+                <th>Ahorro</th>
+                <th>Compra ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (u of usosResult()?.content || []; track u.id) {
+                <tr>
+                  <td>@{{ u.usuario.user }}</td>
+                  <td>{{ u.fechaUso | date:'short' }}</td>
+                  <td class="text-success">{{ u.importeAhorro | currency:'EUR' }}</td>
+                  <td>#{{ u.compra.id }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="4" class="empty-row">Este cupón aún no tiene usos registrados</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="exportCSV()"><i class="fa-solid fa-file-csv"></i> Exportar CSV</button>
+        <div class="spacer"></div>
+        <button class="btn-ghost" (click)="showUsosModal.set(false)">Cerrar</button>
+      </div>
+    </div>
+  </div>
+}

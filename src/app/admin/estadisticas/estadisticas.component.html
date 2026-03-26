@@ -1,0 +1,164 @@
+<div class="stats-page">
+  <div class="stats-header">
+    <div class="title-section">
+      <h1 class="page-title">
+        <i class="fa-solid fa-chart-line"></i> 
+        Análisis Vital
+      </h1>
+      <div class="live-indicator">
+        <span class="pulse-dot"></span>
+        LIVE MONITOR
+      </div>
+    </div>
+    <div class="time-section">
+      <i class="fa-solid fa-clock-rotate-left"></i> {{ lastUpdate() | date:'HH:mm:ss' }}
+    </div>
+  </div>
+
+  @if (loading() && !kpis()) {
+    <div class="stats-skeleton">
+      <div class="skel-card" *ngFor="let i of [1,2,3,4]"></div>
+    </div>
+  } @else {
+    <!-- Row 1: KPI Grid -->
+    <div class="kpi-row">
+      <!-- Usuarios -->
+      <div class="glass kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon users"><i class="fa-solid fa-users"></i></div>
+          <div class="kpi-trend pos">+{{ kpis()?.usuariosDelta }}%</div>
+        </div>
+        <div class="kpi-main">
+          <span class="kpi-value text-white">{{ kpis()?.usuariosTotal | number }}</span>
+          <span class="kpi-label">Usuarios Totales</span>
+        </div>
+      </div>
+
+      <!-- Compras -->
+      <div class="glass kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon sales"><i class="fa-solid fa-cart-shopping"></i></div>
+          <div class="kpi-trend pos">+{{ kpis()?.comprasDelta }}%</div>
+        </div>
+        <div class="kpi-main">
+          <span class="kpi-value text-accent">{{ kpis()?.comprasHoy | number }}</span>
+          <span class="kpi-label">Compras Realizadas</span>
+        </div>
+      </div>
+
+      <!-- Revenue -->
+      <div class="glass kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon revenue"><i class="fa-solid fa-gem"></i></div>
+          <div class="kpi-trend pos">{{ kpis()?.revenueDelta }}%</div>
+        </div>
+        <div class="kpi-main">
+          <span class="kpi-value">{{ kpis()?.revenueMes | number:'1.2-2' }}€</span>
+          <span class="kpi-label">Revenue Mensual</span>
+        </div>
+      </div>
+
+      <!-- Reportes -->
+      <div class="glass kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon flag"><i class="fa-solid fa-skull-crossbones"></i></div>
+          <div class="kpi-trend neg">-{{ kpis()?.reportesDelta || 0 }}%</div>
+        </div>
+        <div class="kpi-main">
+          <span class="kpi-value" [class.danger]="(kpis()?.reportesPendientes || 0) > 0">
+            {{ kpis()?.reportesPendientes }}
+          </span>
+          <span class="kpi-label">Reportes Abiertos</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Charts -->
+    <div class="main-grid">
+      <!-- Chart Left -->
+      <div class="glass chart-box">
+        <div class="chart-title">
+          <span><i class="fa-solid fa-bolt"></i> Dinámica de Usuarios</span>
+          <small>Últimos 7 días</small>
+        </div>
+        
+        @if (usuariosDia().length > 0) {
+          <div class="bar-container">
+            @for (d of usuariosDia(); track d.dia) {
+              <div class="bar-col">
+                <span class="bar-val">{{ d.valor }}</span>
+                <div class="bar-fill" [style.height.%]="getPercent(d.valor, usuariosDia())">
+                  <div class="bar-glow"></div>
+                </div>
+                <span class="bar-label">{{ d.dia }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <i class="fa-solid fa-chart-simple"></i>
+            <p>Datos de tráfico insuficientes para generar proyección</p>
+          </div>
+        }
+      </div>
+
+      <!-- Chart Right -->
+      <div class="glass chart-box purchases">
+        <div class="chart-title">
+          <span><i class="fa-solid fa-fire-flame-curved"></i> Volumen Transaccional</span>
+          <small>Frecuencia semanal</small>
+        </div>
+        
+        @if (comprasDia().length > 0) {
+          <div class="bar-container purchases">
+            @for (d of comprasDia(); track d.dia) {
+              <div class="bar-col">
+                <span class="bar-val">{{ d.valor }}</span>
+                <div class="bar-fill" [style.height.%]="getPercent(d.valor, comprasDia())">
+                  <div class="bar-glow"></div>
+                </div>
+                <span class="bar-label">{{ d.dia }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <i class="fa-solid fa-receipt"></i>
+            <p>A la espera del primer rito de compra de la semana</p>
+          </div>
+        }
+      </div>
+
+      <!-- Leaderboard Bottom -->
+      <div class="glass leader-box">
+        <div class="chart-title">
+          <span><i class="fa-solid fa-crown"></i> Nexus Elite Leaderboard</span>
+          <small>Vendedores con mayor tracción</small>
+        </div>
+
+        @if (topVendedores().length > 0 && hasRealActivity(topVendedores())) {
+          <div class="leader-list">
+            @for (v of topVendedores(); track v.id; let i = $index) {
+              <div class="leader-item">
+                <div class="leader-rank">{{ i + 1 }}</div>
+                <div class="leader-info">
+                  <span class="leader-name">{{ v.user }}</span>
+                  <span class="leader-stats">{{ v.totalVentas }} transacciones</span>
+                </div>
+                <div class="leader-graph">
+                  <div class="leader-bar" [style.width.%]="(v.totalVentas / 500) * 100"></div>
+                </div>
+                <div class="leader-revenue">{{ v.revenue | number:'1.2-2' }} €</div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-leaderboard">
+            <i class="fa-solid fa-hourglass-start"></i>
+            <p>Todavía no hay transacciones para analizar. El ranking se forjará con la primera venta.</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

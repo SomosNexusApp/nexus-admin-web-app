@@ -1,0 +1,135 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><i class="fa-solid fa-folder-tree"></i> Categorías</h1>
+      <p class="page-subtitle">Gestión del catálogo jerárquico</p>
+    </div>
+    <button class="btn-primary" (click)="openCreate()">
+      <i class="fa-solid fa-plus"></i> Nueva Categoría Raíz
+    </button>
+  </div>
+
+  <div class="admin-card tree-container">
+    @if (loading()) {
+      <div class="loading-overlay"><i class="fa-solid fa-spinner fa-spin"></i></div>
+    }
+
+    <div class="tree-header">
+       <div class="col-name">Estructura</div>
+       <div class="col-stats">Stats</div>
+       <div class="col-status">Estado</div>
+       <div class="col-actions">Acciones</div>
+    </div>
+
+    <div class="tree-body">
+      @for (cat of categorias(); track cat.id) {
+        <ng-container *ngTemplateOutlet="treeNode; context: { $implicit: cat, level: 0, siblings: categorias() }"></ng-container>
+      } @empty {
+        <div class="empty-tree">No hay categorías configuradas. Empieza creando una raíz.</div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Recursive Template for Tree Nodes -->
+<ng-template #treeNode let-node let-level="level" let-siblings="siblings">
+  <div class="node-wrapper" [style.padding-left.px]="level * 32">
+    <div class="node-item" [class.is-inactive]="!node.activa" (click)="openEdit(node)">
+      <div class="col-name">
+        <div class="node-icon-wrap" [style.background-color]="node.color + '20'" [style.color]="node.color">
+          <i [class]="'fa-solid ' + (node.icono || 'fa-tag')"></i>
+        </div>
+        <div class="node-info">
+          <span class="node-text">{{ node.nombre }}</span>
+          <span class="node-slug">/{{ node.slug }}</span>
+        </div>
+      </div>
+      
+      <div class="col-stats">
+        <span class="stat-tag" title="Productos"><i class="fa-solid fa-box"></i> {{ node.nProductos || 0 }}</span>
+        <span class="stat-tag" title="Ofertas"><i class="fa-solid fa-tag"></i> {{ node.nOfertas || 0 }}</span>
+      </div>
+
+      <div class="col-status">
+        <button class="status-toggle" [class.active]="node.activa" (click)="$event.stopPropagation(); toggleActiva(node)">
+          {{ node.activa ? 'Activa' : 'Inactiva' }}
+        </button>
+      </div>
+
+      <div class="col-actions" (click)="$event.stopPropagation()">
+        <button class="node-action" (click)="moveUp(node, siblings)" [disabled]="siblings.indexOf(node) === 0">
+          <i class="fa-solid fa-chevron-up"></i>
+        </button>
+        <button class="node-action" (click)="moveDown(node, siblings)" [disabled]="siblings.indexOf(node) === siblings.length - 1">
+          <i class="fa-solid fa-chevron-down"></i>
+        </button>
+        <button class="node-action highlight" (click)="openCreate(node)" title="Añadir subcategoría">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Children Recursion -->
+    @if (node.hijos && node.hijos.length > 0) {
+      <div class="children-container">
+        @for (hijo of node.hijos; track hijo.id) {
+          <ng-container *ngTemplateOutlet="treeNode; context: { $implicit: hijo, level: level + 1, siblings: node.hijos }"></ng-container>
+        }
+      </div>
+    }
+  </div>
+</ng-template>
+
+<!-- SLIDE PANEL CATEGORIA -->
+@if (panelOpen()) {
+  <div class="panel-overlay" (click)="closePanel()"></div>
+  <div class="slide-panel">
+    <div class="panel-header">
+      <h2>{{ isNew ? 'Nueva Categoría' : 'Editar Categoría' }}</h2>
+      <button class="close-panel-btn" (click)="closePanel()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    
+    <div class="panel-body">
+      <div class="form-group">
+        <label>Nombre de la Categoría</label>
+        <input type="text" [(ngModel)]="catForm.nombre" (ngModelChange)="onNombreChange()" placeholder="Ej: Electrónica, Moda..." class="fancy-input">
+      </div>
+
+      <div class="form-group">
+        <label>Slug (URL)</label>
+        <div class="slug-input-wrap">
+          <span class="slug-prefix">nexsus.com/cat/</span>
+          <input type="text" [(ngModel)]="catForm.slug" (ngModelChange)="checkSlug()" [disabled]="!isNew && selectedCat()?.slug !== ''" class="fancy-input slug-field">
+        </div>
+        @if (slugExists()) {
+          <p class="error-text"><i class="fa-solid fa-triangle-exclamation"></i> Este slug ya está en uso</p>
+        }
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Icono (FontAwesome)</label>
+          <div class="icon-selector">
+            <i [class]="'fa-solid ' + catForm.icono"></i>
+            <input type="text" [(ngModel)]="catForm.icono" placeholder="fa-tag" class="fancy-input">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Color Distintivo</label>
+          <input type="color" [(ngModel)]="catForm.color" class="color-picker">
+        </div>
+      </div>
+
+      <div class="actions-section">
+        <button class="btn-save" [disabled]="!catForm.nombre || !catForm.slug || slugExists()" (click)="save()">
+          <i class="fa-solid fa-floppy-disk"></i> {{ isNew ? 'Crear Categoría' : 'Guardar Cambios' }}
+        </button>
+        @if (!isNew) {
+          <button class="btn-delete" (click)="eliminar(selectedCat()!.id)">
+            <i class="fa-solid fa-trash"></i> Eliminar Categoría
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}

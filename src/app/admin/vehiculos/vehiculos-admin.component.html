@@ -1,0 +1,162 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><i class="fa-solid fa-car"></i> Vehículos</h1>
+      <p class="page-subtitle">{{ result()?.totalElements || 0 }} vehículos registrados</p>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="search-wrap">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" [(ngModel)]="filtros.q" (ngModelChange)="onSearch()" placeholder="Buscar marca, modelo o ID..." class="search-input"/>
+    </div>
+    
+    <select [(ngModel)]="filtros.tipo" (ngModelChange)="page = 0; loadVehiculos()" class="filter-select">
+      <option value="">Todos los tipos</option>
+      <option value="COCHE">Coches</option>
+      <option value="MOTO">Motos</option>
+      <option value="FURGONETA">Furgonetas</option>
+      <option value="CAMION">Camiones</option>
+    </select>
+
+    <select [(ngModel)]="filtros.estado" (ngModelChange)="page = 0; loadVehiculos()" class="filter-select">
+      <option value="">Todos los estados</option>
+      <option value="DISPONIBLE">En venta</option>
+      <option value="VENDIDO">Vendido</option>
+      <option value="PAUSADO">Pausado Admin</option>
+    </select>
+
+    <div class="tech-filters">
+       <input type="number" [(ngModel)]="filtros.anioMin" (ngModelChange)="onSearch()" placeholder="Año min" class="small-input">
+       <input type="number" [(ngModel)]="filtros.kmMax" (ngModelChange)="onSearch()" placeholder="Km max" class="small-input">
+    </div>
+  </div>
+
+  <div class="admin-card">
+    <div class="table-wrap">
+      @if (loading()) {
+        <div class="loading-overlay"><i class="fa-solid fa-spinner fa-spin"></i></div>
+      }
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Vehículo</th>
+            <th>Ficha Técnica</th>
+            <th>Precio</th>
+            <th>Publicador</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (v of result()?.content || []; track v.id) {
+            <tr class="clickable-row" (click)="openPanel(v)">
+              <td>
+                <div class="car-cell">
+                  @if (v.imagenPrincipal) {
+                    <img [src]="v.imagenPrincipal" class="car-thumb" alt="">
+                  } @else {
+                     <div class="car-thumb-placeholder"><i class="fa-solid fa-car"></i></div>
+                  }
+                  <div class="car-meta">
+                    <span class="car-title">{{ v.marca }} {{ v.modelo }}</span>
+                    <span class="car-id">#{{ v.id }} | {{ v.tipoVehiculo }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="car-details">
+                  <span class="detail-tag">{{ v.anio }}</span>
+                  <span class="detail-tag">{{ v.kilometros | number }} km</span>
+                  <span class="detail-tag">{{ v.combustible }}</span>
+                </div>
+              </td>
+              <td><strong class="price-tag">{{ v.precio | currency:'EUR' }}</strong></td>
+              <td><span class="user-label">@{{ v.publicador.user }}</span></td>
+              <td><span class="status-badge" [ngClass]="estadoClass(v.estadoVehiculo)">{{ estadoLabel(v.estadoVehiculo) }}</span></td>
+              <td class="dim-cell">{{ v.fechaPublicacion | date:'dd/MM/yy' }}</td>
+              <td><button class="action-icon-btn"><i class="fa-solid fa-chevron-right"></i></button></td>
+            </tr>
+          } @empty {
+            <tr><td colspan="7" class="empty-row">No hay vehículos que coincidan con la búsqueda</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    
+    @if (result() && result()!.totalPages > 1) {
+      <div class="pagination">
+        <button class="page-btn" [disabled]="page === 0" (click)="prevPage()"><i class="fa-solid fa-chevron-left"></i></button>
+        <span>{{ page + 1 }} / {{ result()!.totalPages }}</span>
+        <button class="page-btn" [disabled]="page >= result()!.totalPages - 1" (click)="nextPage()"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- SLIDE PANEL -->
+@if (panelOpen() && selectedVehiculo()) {
+  <div class="panel-overlay" (click)="closePanel()"></div>
+  <div class="slide-panel">
+    <div class="panel-header">
+      <h2>Gestión de Vehículo</h2>
+      <button class="close-panel-btn" (click)="closePanel()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="panel-body">
+      <div class="panel-media">
+        <img [src]="selectedVehiculo()!.imagenPrincipal" class="panel-img">
+      </div>
+      <div class="info-grid">
+        <div class="info-item full"><span class="info-label">Marca y Modelo</span><span class="info-value-big">{{ selectedVehiculo()!.marca }} {{ selectedVehiculo()!.modelo }}</span></div>
+        <div class="info-item"><span class="info-label">Año</span><span>{{ selectedVehiculo()!.anio }}</span></div>
+        <div class="info-item"><span class="info-label">Kilómetros</span><span>{{ selectedVehiculo()!.kilometros | number }} km</span></div>
+        <div class="info-item"><span class="info-label">Combustible</span><span>{{ selectedVehiculo()!.combustible }}</span></div>
+        <div class="info-item"><span class="info-label">Precio</span><span class="info-value-strong">{{ selectedVehiculo()!.precio | currency:'EUR' }}</span></div>
+        <div class="info-item full"><span class="info-label">Publicado por</span><span>{{ selectedVehiculo()!.publicador.user }}</span></div>
+      </div>
+
+      <div class="actions-section">
+         <h3 class="actions-title">Acciones de Admin</h3>
+         <div class="actions-grid">
+           <button class="action-btn" (click)="openVehiculoUrl(selectedVehiculo()!.id)"><i class="fa-solid fa-eye"></i> Ver</button>
+           @if (selectedVehiculo()!.estadoVehiculo !== 'PAUSADO') {
+             <button class="action-btn action-warn" (click)="showPausarModal.set(true)"><i class="fa-solid fa-pause"></i> Pausar</button>
+           } @else {
+             <button class="action-btn action-success" (click)="doReactivar()"><i class="fa-solid fa-play"></i> Reactivar</button>
+           }
+           <button class="action-btn action-danger" (click)="showEliminarModal.set(true)"><i class="fa-solid fa-trash"></i> Eliminar</button>
+         </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODALES -->
+@if (showPausarModal()) {
+  <div class="modal-overlay">
+    <div class="modal">
+      <h3>Pausar Vehículo</h3>
+      <textarea [(ngModel)]="motivoAccion" placeholder="Indica el motivo de la pausa administrativa..." rows="4" class="modal-textarea"></textarea>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" (click)="showPausarModal.set(false)">Cancelar</button>
+        <button class="btn-modal-confirm warn" [disabled]="!motivoAccion" (click)="doPausar()">Pausar</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showEliminarModal()) {
+  <div class="modal-overlay">
+    <div class="modal">
+      <h3>Eliminar Vehículo</h3>
+      <div class="modal-warning danger">⚠️ Borrado definitivo por infracción de normas.</div>
+      <textarea [(ngModel)]="motivoAccion" placeholder="Motivo del borrado..." rows="4" class="modal-textarea"></textarea>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" (click)="showEliminarModal.set(false)">Cancelar</button>
+        <button class="btn-modal-confirm danger" [disabled]="!motivoAccion" (click)="doEliminar()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+}

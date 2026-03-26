@@ -1,0 +1,181 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><i class="fa-solid fa-tags"></i> Ofertas</h1>
+      <p class="page-subtitle">Moderación y gestión de promociones</p>
+    </div>
+    <button class="btn-primary" (click)="showFlashModal.set(true)">
+      <i class="fa-solid fa-bolt"></i> Nueva Oferta Flash
+    </button>
+  </div>
+
+  <div class="filters-bar">
+    <div class="tabs-filters">
+      <button class="tab-btn" [class.active]="estadoFiltro === 'PENDIENTE_REVISION'" (click)="estadoFiltro = 'PENDIENTE_REVISION'; page = 0; loadOfertas()">
+        Pendientes
+      </button>
+      <button class="tab-btn" [class.active]="estadoFiltro === 'ACTIVA'" (click)="estadoFiltro = 'ACTIVA'; page = 0; loadOfertas()">
+        Activas
+      </button>
+      <button class="tab-btn" [class.active]="estadoFiltro === 'RECHAZADA'" (click)="estadoFiltro = 'RECHAZADA'; page = 0; loadOfertas()">
+        Rechazadas
+      </button>
+      <button class="tab-btn" [class.active]="estadoFiltro === ''" (click)="estadoFiltro = ''; page = 0; loadOfertas()">
+        Todas
+      </button>
+    </div>
+  </div>
+
+  <div class="admin-card">
+    <div class="table-wrap">
+      @if (loading()) {
+        <div class="loading-overlay"><i class="fa-solid fa-spinner fa-spin"></i></div>
+      }
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Oferta</th>
+            <th>Categoría</th>
+            <th>Precios</th>
+            <th>Votos</th>
+            <th>Estado</th>
+            <th class="text-center">Destacada</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (o of result()?.content || []; track o.id) {
+            <tr class="clickable-row" (click)="openPanel(o)">
+              <td>
+                <div class="offer-cell">
+                  <div class="offer-icon" [class.is-flash]="o.esFlash">
+                    <i [class]="o.esFlash ? 'fa-solid fa-bolt' : 'fa-solid fa-tag'"></i>
+                  </div>
+                  <div class="offer-meta">
+                    <span class="offer-title">{{ o.titulo }}</span>
+                    <span class="offer-user">por {{ o.actor.user }}</span>
+                  </div>
+                </div>
+              </td>
+              <td><span class="cat-label">{{ o.categoria?.nombre || 'General' }}</span></td>
+              <td>
+                <div class="price-stack">
+                  <span class="price-now">{{ o.precioOferta | currency:'EUR' }}</span>
+                  <span class="price-old">{{ o.precioOriginal | currency:'EUR' }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="votes-badge" [class.positive]="o.votos! > 0" [class.negative]="o.votos! < 0">
+                   {{ o.votos || 0 }}°
+                </span>
+              </td>
+              <td><span class="status-badge" [ngClass]="estadoClass(o.estado)">{{ estadoLabel(o.estado) }}</span></td>
+              <td class="text-center">
+                <button class="star-btn" (click)="$event.stopPropagation(); toggleDestacada(o.id)">
+                  <i [class]="o.destacada ? 'fa-solid fa-star star-active' : 'fa-regular fa-star star-dim'"></i>
+                </button>
+              </td>
+              <td>
+                <button class="action-icon-btn"><i class="fa-solid fa-chevron-right"></i></button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="7" class="empty-row">No hay ofertas que coincidan con el filtro</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (result() && result()!.totalPages > 1) {
+      <div class="pagination">
+        <button class="page-btn" [disabled]="page === 0" (click)="prevPage()"><i class="fa-solid fa-chevron-left"></i></button>
+        <span>{{ page + 1 }} / {{ result()!.totalPages }}</span>
+        <button class="page-btn" [disabled]="page >= result()!.totalPages - 1" (click)="nextPage()"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- PANEL DETALLE -->
+@if (panelOpen() && selectedOferta()) {
+  <div class="panel-overlay" (click)="closePanel()"></div>
+  <div class="slide-panel">
+    <div class="panel-header">
+      <h2>Moderación de Oferta</h2>
+      <button class="close-panel-btn" (click)="closePanel()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="panel-body">
+      <div class="info-grid">
+        <div class="info-item full"><span class="info-label">Título</span><span class="info-value-big">{{ selectedOferta()!.titulo }}</span></div>
+        <div class="info-item full"><span class="info-label">Descripción</span><p class="desc-text">{{ selectedOferta()!.descripcion }}</p></div>
+        <div class="info-item"><span class="info-label">Precio Oferta</span><span class="info-value-strong">{{ selectedOferta()!.precioOferta | currency:'EUR' }}</span></div>
+        <div class="info-item"><span class="info-label">Precio Original</span><span class="price-old big">{{ selectedOferta()!.precioOriginal | currency:'EUR' }}</span></div>
+        <div class="info-item"><span class="info-label">Votos</span><span>{{ selectedOferta()!.votos || 0 }}°</span></div>
+        <div class="info-item"><span class="info-label">Usuario</span><span>{{ selectedOferta()!.actor.user }}</span></div>
+        @if (selectedOferta()!.esFlash) {
+          <div class="info-item full flash-info">
+             <i class="fa-solid fa-bolt"></i> Oferta Flash activa hasta {{ selectedOferta()!.flashFin | date:'short' }}
+          </div>
+        }
+      </div>
+
+      <div class="actions-section">
+        <h3 class="actions-title">Moderación</h3>
+        <div class="actions-grid">
+          @if (selectedOferta()!.estado === 'PENDIENTE_REVISION') {
+            <button class="action-btn action-success" (click)="aprobar(selectedOferta()!.id)">
+              <i class="fa-solid fa-check"></i> Aprobar Oferta
+            </button>
+            <button class="action-btn action-danger" (click)="showRechazarModal.set(true)">
+              <i class="fa-solid fa-xmark"></i> Rechazar
+            </button>
+          } @else if (selectedOferta()!.estado === 'ACTIVA') {
+             <button class="action-btn action-danger" (click)="showRechazarModal.set(true)">
+              <i class="fa-solid fa-pause"></i> Retirar de la venta
+            </button>
+          } @else if (selectedOferta()!.estado === 'RECHAZADA') {
+            <button class="action-btn action-success" (click)="aprobar(selectedOferta()!.id)">
+              <i class="fa-solid fa-undo"></i> Reactivar / Aprobar
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL RECHAZAR -->
+@if (showRechazarModal()) {
+  <div class="modal-overlay">
+    <div class="modal">
+      <h3>Rechazar Oferta</h3>
+      <p class="modal-intro">Se enviará una notificación al usuario con el motivo del rechazo.</p>
+      <textarea [(ngModel)]="motivoRechazo" placeholder="Ej: Precio incorrecto, contenido inapropiado..." rows="4" class="modal-textarea"></textarea>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" (click)="showRechazarModal.set(false)">Cancelar</button>
+        <button class="btn-modal-confirm danger" [disabled]="!motivoRechazo" (click)="rechazar()">Confirmar Rechazo</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL NUEVA FLASH -->
+@if (showFlashModal()) {
+  <div class="modal-overlay">
+    <div class="modal wide">
+      <h3><i class="fa-solid fa-bolt"></i> Crear Oferta Flash</h3>
+      <div class="flash-form-grid">
+        <div class="modal-field full"><label>Título</label><input type="text" [(ngModel)]="flashForm.titulo" class="search-input"></div>
+        <div class="modal-field full"><label>Descripción</label><textarea [(ngModel)]="flashForm.descripcion" rows="3" class="modal-textarea"></textarea></div>
+        <div class="modal-field"><label>Precio Flash (€)</label><input type="number" [(ngModel)]="flashForm.precioEspecial" class="price-input full-w"></div>
+        <div class="modal-field"><label>Precio Original (€)</label><input type="number" [(ngModel)]="flashForm.precioOriginal" class="price-input full-w"></div>
+        <div class="modal-field"><label>Fecha Fin</label><input type="datetime-local" [(ngModel)]="flashForm.flashFin" class="search-input"></div>
+        <div class="modal-field"><label>Límite Unidades</label><input type="number" [(ngModel)]="flashForm.limiteUnidades" class="price-input full-w"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" (click)="showFlashModal.set(false)">Cancelar</button>
+        <button class="btn-modal-confirm success" [disabled]="!flashForm.titulo || !flashForm.precioEspecial" (click)="crearFlash()">Publicar Oferta Flash</button>
+      </div>
+    </div>
+  </div>
+}

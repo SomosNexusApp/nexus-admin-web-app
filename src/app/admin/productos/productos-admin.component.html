@@ -1,0 +1,236 @@
+<div class="admin-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><i class="fa-solid fa-box"></i> Productos</h1>
+      <p class="page-subtitle">{{ result()?.totalElements || 0 }} productos en el catálogo</p>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div class="search-wrap">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" [(ngModel)]="filtros.q" (ngModelChange)="onSearch()" placeholder="Buscar por título, descripción..." class="search-input"/>
+    </div>
+    <select [(ngModel)]="filtros.categoriaId" (ngModelChange)="page = 0; loadProductos()" class="filter-select">
+      <option [ngValue]="null">Todas las categorías</option>
+      @for (cat of categorias(); track cat.id) {
+        <option [ngValue]="cat.id">{{ cat.nombre }}</option>
+        @for (hijo of cat.hijos; track hijo.id) {
+          <option [ngValue]="hijo.id">&nbsp;&nbsp;— {{ hijo.nombre }}</option>
+        }
+      }
+    </select>
+    <select [(ngModel)]="filtros.estado" (ngModelChange)="page = 0; loadProductos()" class="filter-select">
+      <option value="">Todos los estados</option>
+      <option value="DISPONIBLE">En venta</option>
+      <option value="RESERVADO">Reservado</option>
+      <option value="VENDIDO">Vendido</option>
+      <option value="SUSPENDIDO_ADMIN">Suspendido</option>
+      <option value="PAUSADO">Pausado (Vendedor)</option>
+      <option value="ELIMINADO">Eliminado</option>
+    </select>
+    <div class="price-filters">
+      <input type="number" [(ngModel)]="filtros.precioMin" (ngModelChange)="onSearch()" placeholder="Min €" class="price-input">
+      <input type="number" [(ngModel)]="filtros.precioMax" (ngModelChange)="onSearch()" placeholder="Max €" class="price-input">
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="admin-card">
+    <div class="table-wrap">
+      @if (loading()) {
+        <div class="loading-overlay"><i class="fa-solid fa-spinner fa-spin"></i></div>
+      }
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th>Precio</th>
+            <th>Vendedor</th>
+            <th>Estado</th>
+            <th>Publicado</th>
+            <th class="text-center">Destacado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of result()?.content || []; track p.id) {
+            <tr class="clickable-row" (click)="openPanel(p)" [class.destacado-row]="p.destacado">
+              <td>
+                <div class="prod-cell">
+                  @if (p.imagenPrincipal) {
+                    <img [src]="p.imagenPrincipal" class="prod-thumb" alt="">
+                  } @else {
+                    <div class="prod-thumb-placeholder"><i class="fa-solid fa-image"></i></div>
+                  }
+                  <div class="prod-meta">
+                    <span class="prod-title">{{ p.titulo }}</span>
+                    <span class="prod-id">ID: #{{ p.id }}</span>
+                  </div>
+                </div>
+              </td>
+              <td><span class="cat-label">{{ p.categoria?.nombre || '—' }}</span></td>
+              <td><strong class="price-tag">{{ p.precio | currency:'EUR' }}</strong></td>
+              <td>
+                <div class="seller-cell">
+                  <span class="seller-name">{{ p.vendedor.user }}</span>
+                </div>
+              </td>
+              <td><span class="status-badge" [ngClass]="estadoClass(p.estado)">{{ estadoLabel(p.estado) }}</span></td>
+              <td class="dim-cell">{{ p.fechaPublicacion | date:'dd/MM/yy' }}</td>
+              <td class="text-center">
+                @if (p.destacado) {
+                  <i class="fa-solid fa-star star-active"></i>
+                } @else {
+                  <i class="fa-regular fa-star star-dim"></i>
+                }
+              </td>
+              <td>
+                <button class="action-icon-btn" (click)="$event.stopPropagation(); openPanel(p)">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="8" class="empty-row">No se han encontrado productos</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (result() && result()!.totalPages > 1) {
+      <div class="pagination">
+        <button class="page-btn" [disabled]="page === 0" (click)="prevPage()">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <span>{{ page + 1 }} / {{ result()!.totalPages }}</span>
+        <button class="page-btn" [disabled]="page >= result()!.totalPages - 1" (click)="nextPage()">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- SLIDE PANEL -->
+@if (panelOpen() && selectedProduct()) {
+  <div class="panel-overlay" (click)="closePanel()"></div>
+  <div class="slide-panel">
+    <div class="panel-header">
+      <div class="panel-title-container">
+        <h2>Detalle del Producto</h2>
+        <p class="panel-subtitle">ID: #{{ selectedProduct()!.id }}</p>
+      </div>
+      <button class="close-panel-btn" (click)="closePanel()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="panel-body">
+      <!-- Media Preview -->
+      <div class="panel-media">
+        @if (selectedProduct()!.imagenPrincipal) {
+          <img [src]="selectedProduct()!.imagenPrincipal" class="panel-img" alt="">
+        }
+      </div>
+
+      <!-- Info Grid -->
+      <div class="info-grid">
+        <div class="info-item full">
+          <span class="info-label">Título</span>
+          <span class="info-value-big">{{ selectedProduct()!.titulo }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Precio</span>
+          <span class="info-value-strong">{{ selectedProduct()!.precio | currency:'EUR' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Estado</span>
+          <span class="status-badge" [ngClass]="estadoClass(selectedProduct()!.estado)">{{ estadoLabel(selectedProduct()!.estado) }}</span>
+        </div>
+        <div class="info-item"><span class="info-label">Vendedor</span><span>{{ selectedProduct()!.vendedor.user }}</span></div>
+        <div class="info-item"><span class="info-label">Categoría</span><span>{{ selectedProduct()!.categoria?.nombre }}</span></div>
+        <div class="info-item full">
+          <span class="info-label">Descripción</span>
+          <p class="desc-text">{{ selectedProduct()!.descripcion }}</p>
+        </div>
+        @if (selectedProduct()!.motivoPausa) {
+           <div class="info-item full warn-box">
+             <span class="info-label">Motivo de la Pausa</span>
+             <p>{{ selectedProduct()!.motivoPausa }}</p>
+             <small>Hasta: {{ selectedProduct()!.pausadoHasta | date:'dd/MM/yyyy HH:mm' }}</small>
+           </div>
+        }
+      </div>
+
+      <!-- Acciones -->
+      <div class="actions-section">
+        <h3 class="actions-title">Gestión Administrativa</h3>
+        <div class="actions-grid">
+          <button class="action-btn" (click)="openProductUrl(selectedProduct()!.id)">
+            <i class="fa-solid fa-eye"></i> Ver en Nexsus
+          </button>
+          <button class="action-btn" [class.action-destacar]="!selectedProduct()!.destacado" (click)="toggleDestacado(selectedProduct()!.id)">
+            <i class="fa-solid fa-star"></i> {{ selectedProduct()!.destacado ? 'Quitar destacado' : 'Destacar' }}
+          </button>
+          
+          @if (selectedProduct()!.estado !== 'SUSPENDIDO_ADMIN' && selectedProduct()!.estado !== 'ELIMINADO') {
+            <button class="action-btn action-warn" (click)="showPausarModal.set(true)">
+              <i class="fa-solid fa-pause"></i> Pausar Producto
+            </button>
+          }
+          @if (selectedProduct()!.estado === 'SUSPENDIDO_ADMIN') {
+            <button class="action-btn action-success" (click)="doReactivar()">
+              <i class="fa-solid fa-play"></i> Reactivar
+            </button>
+          }
+          @if (selectedProduct()!.estado !== 'ELIMINADO') {
+            <button class="action-btn action-danger" (click)="showEliminarModal.set(true)">
+              <i class="fa-solid fa-trash"></i> Eliminar
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODALES -->
+@if (showPausarModal()) {
+  <div class="modal-overlay">
+    <div class="modal">
+      <h3><i class="fa-solid fa-pause"></i> Suspender Producto</h3>
+      <p class="modal-intro">El producto dejará de ser visible en el marketplace hasta que expire la pausa o se reactive manualmente.</p>
+      <textarea [(ngModel)]="motivoAccion" placeholder="Motivo de la suspensión (se envía al vendedor)..." rows="4" class="modal-textarea"></textarea>
+      <div class="modal-field">
+        <label>Duración de la pausa</label>
+        <select [(ngModel)]="duracionPausa" class="filter-select full-w">
+          <option [value]="24">24 horas</option>
+          <option [value]="72">3 días</option>
+          <option [value]="168">7 días</option>
+          <option [value]="720">30 días</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" (click)="showPausarModal.set(false)">Cancelar</button>
+        <button class="btn-modal-confirm warn" [disabled]="!motivoAccion" (click)="doPausar()">Confirmar Pausa</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showEliminarModal()) {
+  <div class="modal-overlay">
+    <div class="modal">
+      <h3><i class="fa-solid fa-trash"></i> Eliminar Producto</h3>
+      <div class="modal-warning danger">⚠️ Esta acción es definitiva (soft-delete). El producto no podrá ser reactivado por el vendedor.</div>
+      <textarea [(ngModel)]="motivoAccion" placeholder="Indica el motivo del borrado..." rows="4" class="modal-textarea"></textarea>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" (click)="showEliminarModal.set(false)">Cancelar</button>
+        <button class="btn-modal-confirm danger" [disabled]="!motivoAccion" (click)="doEliminar()">Eliminar permanentemente</button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,11 +1,47 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { ApplicationConfig, APP_INITIALIZER } from '@angular/core';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { provideHttpClient, HTTP_INTERCEPTORS, withInterceptorsFromDi } from '@angular/common/http';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { catchError, of, Observable, forkJoin } from 'rxjs';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
 
 import { routes } from './app.routes';
 
+import { AuthService } from './core/auth/auth.service';
+import { JwtService } from './core/auth/jwt-service';
+import { JwtInterceptor } from './core/interceptors/jwt-interceptor';
+import { ErrorInterceptor } from './core/interceptors/error-interceptor';
+
+registerLocaleData(localeEs, 'es-ES');
+
+export function initializeUserData(authService: AuthService, jwtService: JwtService) {
+  return () => {
+    const obs: Observable<any>[] = [];
+    if (jwtService.isValid(false)) {
+      obs.push(authService.loadCurrentUser(false).pipe(catchError(() => of(null))));
+    }
+    if (jwtService.isValid(true)) {
+      obs.push(authService.loadCurrentUser(true).pipe(catchError(() => of(null))));
+    }
+    return obs.length > 0 ? forkJoin(obs) : of(null);
+  };
+}
+
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideBrowserGlobalErrorListeners(),
-    provideRouter(routes)
-  ]
+    provideRouter(routes, withComponentInputBinding()),
+    provideHttpClient(withInterceptorsFromDi()),
+    provideAnimationsAsync(),
+
+    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeUserData,
+      deps: [AuthService, JwtService],
+      multi: true,
+    },
+  ],
 };

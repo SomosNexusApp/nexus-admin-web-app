@@ -1,0 +1,76 @@
+<div class="admin-login-wrap">
+  <div class="mist-layer"></div>
+
+  <div class="ritual-container">
+    <div class="ancient-logo" style="margin-bottom: 4rem; display: flex; justify-content: center;">
+      <img src="/logo.webp" alt="Nexus Logo" style="height: 100px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)); transition: transform 0.3s ease;">
+    </div>
+
+    <form (ngSubmit)="show2FA() ? verifyOtp() : submit()" class="ritual-form" #f="ngForm" autocomplete="off">
+      @if (!show2FA()) {
+        <div class="ritual-field">
+          <input
+            type="text"
+            [(ngModel)]="email"
+            name="email"
+            placeholder="Email"
+            required
+            autocomplete="username"
+          />
+          <label>Identificador</label>
+          <div class="field-glow"></div>
+        </div>
+
+        <div class="ritual-field">
+          <input
+            type="password"
+            [(ngModel)]="password"
+            name="password"
+            placeholder="Contraseña"
+            required
+            autocomplete="current-password"
+          />
+          <label>Contraseña</label>
+          <div class="field-glow"></div>
+        </div>
+      } @else {
+        <div class="ritual-2fa-msg">
+          Se ha activado la protección ritual. Introduce el código de 6 dígitos de tu oráculo.
+        </div>
+        <div class="ritual-field">
+          <input
+            type="text"
+            [ngModel]="otpCode()"
+            (ngModelChange)="otpCode.set($event)"
+            name="otp"
+            placeholder="000000"
+            required
+            maxlength="6"
+            pattern="\d{6}"
+            style="text-align: center; letter-spacing: 0.5rem; font-size: 2rem;"
+          />
+          <label>Código de Seguridad</label>
+          <div class="field-glow"></div>
+        </div>
+      }
+
+      @if (error()) {
+        <div class="ritual-error">
+          <span>— {{ error() }} —</span>
+        </div>
+      }
+
+      <button type="submit" class="ritual-btn" [disabled]="loading()">
+        @if (loading()) {
+          <div class="ethereal-loader"></div>
+        } @else {
+          <span>{{ show2FA() ? 'VERIFICAR' : 'ENTRAR' }}</span>
+        }
+      </button>
+    </form>
+
+    <div class="ritual-footer">
+      <p><i class="fa-solid fa-lock" style="margin-right: 10px; opacity: 0.6;"></i> PANEL DE ADMINISTRACIÓN DE ACCESO PRIVADO · {{ year }}</p>
+    </div>
+  </div>
+</div>
