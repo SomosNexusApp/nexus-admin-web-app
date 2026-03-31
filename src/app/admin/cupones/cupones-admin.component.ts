@@ -46,8 +46,10 @@ export class CuponesAdminComponent implements OnInit {
   // Form
   form = {
     codigo: '',
-    tipo: 'PORCENTAJE' as 'PORCENTAJE' | 'FIJO' | 'ENVIO_GRATIS',
+    tipo: 'PORCENTAJE' as 'PORCENTAJE' | 'FIJO' | 'ENVIO_GRATIS' | 'COMBINADO',
     valor: null as number | null,
+    valorFijo: null as number | null,
+    valorPorcentaje: null as number | null,
     importeMinimo: null as number | null,
     topeMaximo: null as number | null,
     alcance: 'TODOS' as 'TODOS' | 'USUARIO' | 'GRUPO',
@@ -143,6 +145,8 @@ export class CuponesAdminComponent implements OnInit {
       codigo: c.codigo,
       tipo: c.tipo,
       valor: c.valor || null,
+      valorFijo: c.valorFijo || null,
+      valorPorcentaje: c.valorPorcentaje || null,
       importeMinimo: c.importeMinimo || null,
       requiereMinimo: !!c.importeMinimo,
       topeMaximo: c.topeMaximo || null,
@@ -166,7 +170,8 @@ export class CuponesAdminComponent implements OnInit {
 
   resetForm() {
     this.form = {
-      codigo: '', tipo: 'PORCENTAJE', valor: null, importeMinimo: null, topeMaximo: null,
+      codigo: '', tipo: 'PORCENTAJE', valor: null, valorFijo: null, valorPorcentaje: null,
+      importeMinimo: null, topeMaximo: null,
       alcance: 'TODOS', usuario: null, grupoObjetivo: 'NUEVOS_USUARIOS',
       limiteUsoTotal: null, limiteUsoPorUsuario: 1, fechaInicio: new Date().toISOString().substring(0, 16),
       fechaFin: '', categoriasIds: [], descripcionInterna: '', activo: true,

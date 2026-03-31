@@ -57,6 +57,11 @@ export const ADMIN_ROUTES: Routes = [
           import('./ofertas/ofertas-admin.component').then(m => m.OfertasAdminComponent),
       },
       {
+        path: 'compras',
+        loadComponent: () =>
+          import('./compras/compras-admin.component').then(m => m.ComprasAdminComponent),
+      },
+      {
         path: 'cupones',
         loadComponent: () =>
           import('./cupones/cupones-admin.component').then(m => m.CuponesAdminComponent),
@@ -67,9 +72,14 @@ export const ADMIN_ROUTES: Routes = [
           import('./vehiculos/vehiculos-admin.component').then(m => m.VehiculosAdminComponent),
       },
       {
-        path: 'categorias',
+        path: 'soporte-chat',
         loadComponent: () =>
-          import('./categorias/categorias-admin.component').then(m => m.CategoriasAdminComponent),
+          import('./soporte/soporte-chat-admin.component').then(m => m.SoporteChatAdminComponent),
+      },
+      {
+        path: 'notificaciones',
+        loadComponent: () =>
+          import('./notificaciones/notificaciones-admin.component').then(m => m.NotificacionesAdminComponent),
       },
       {
         path: 'newsletter',

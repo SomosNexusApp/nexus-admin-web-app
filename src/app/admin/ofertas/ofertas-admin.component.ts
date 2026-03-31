@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AdminOfertasService } from '../services/admin-ofertas.service';
-import { AdminOferta, PagedResult } from '../admin.models';
+import { AdminCategoriasService } from '../services/admin-categorias.service';
+import { AdminOferta, PagedResult, AdminCategoria } from '../admin.models';
 import { environment } from '../../../environments/enviroment';
 
 @Component({
@@ -15,12 +16,14 @@ import { environment } from '../../../environments/enviroment';
 })
 export class OfertasAdminComponent implements OnInit {
   private ofertaSvc = inject(AdminOfertasService);
+  private catSvc = inject(AdminCategoriasService);
 
   // Data
   result = signal<PagedResult<AdminOferta> | null>(null);
   loading = signal(true);
   selectedOferta = signal<AdminOferta | null>(null);
   panelOpen = signal(false);
+  categorias = signal<AdminCategoria[]>([]);
 
   // Filters
   estadoFiltro = 'ACTIVA';
@@ -38,11 +41,33 @@ export class OfertasAdminComponent implements OnInit {
     precioEspecial: null as number | null,
     precioOriginal: null as number | null,
     flashFin: '',
-    limiteUnidades: 100
+    limiteUnidades: 100,
+    imagenPrincipal: '',
+    tienda: '',
+    urlOferta: '',
+    categoriaId: null as number | null
   };
 
   ngOnInit(): void {
     this.loadOfertas();
+    this.loadCategorias();
+  }
+
+  loadCategorias(): void {
+    this.catSvc.getArbol().subscribe(cats => {
+      this.categorias.set(this.flattenCats(cats));
+    });
+  }
+
+  private flattenCats(cats: AdminCategoria[]): AdminCategoria[] {
+    let res: AdminCategoria[] = [];
+    for (const c of cats) {
+      res.push(c);
+      if (c.hijos && c.hijos.length > 0) {
+        res = res.concat(this.flattenCats(c.hijos));
+      }
+    }
+    return res;
   }
 
   loadOfertas(): void {
@@ -105,7 +130,8 @@ export class OfertasAdminComponent implements OnInit {
   resetFlashForm(): void {
     this.flashForm = {
       titulo: '', descripcion: '', precioEspecial: null, precioOriginal: null,
-      flashFin: '', limiteUnidades: 100
+      flashFin: '', limiteUnidades: 100,
+      imagenPrincipal: '', tienda: '', urlOferta: '', categoriaId: null
     };
   }
 

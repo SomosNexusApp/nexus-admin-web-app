@@ -1,0 +1,267 @@
+<div class="admin-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><i class="fa-solid fa-cart-shopping"></i> Gestión de Compras</h1>
+      <p class="page-subtitle">Monitoriza, cancela o reembolsa las transferencias de valor en el ecosistema Nexus</p>
+    </div>
+  </div>
+
+  <!-- Filters & Legend -->
+  <div class="filters-container">
+    <div class="glass-panel filter-panel">
+      <form [formGroup]="filters" class="filters-form">
+        <div class="form-group">
+          <label>Estado de la Transacción</label>
+          <div class="select-wrapper">
+            <select formControlName="estado" class="form-control">
+              <option value="">Todos los estados</option>
+              <option *ngFor="let est of estados" [value]="est">{{ est }}</option>
+            </select>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+        </div>
+      </form>
+
+      <div class="legend-divider"></div>
+
+      <div class="legend-section">
+        <span class="legend-label">Acciones:</span>
+        <div class="legend-items">
+          <div class="legend-item">
+            <i class="fa-solid fa-rotate-left icon-reembolsar"></i>
+            <span>Reembolsar</span>
+          </div>
+          <div class="legend-item">
+            <i class="fa-solid fa-ban icon-cancelar"></i>
+            <span>Cancelar</span>
+          </div>
+          <div class="legend-item">
+            <i class="fa-solid fa-barcode icon-etiqueta"></i>
+            <span>Etiqueta</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="admin-card">
+    
+    <!-- Error Alert -->
+    <div *ngIf="errorMessage()" class="error-alert">
+      <div class="error-content">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <div class="error-text">
+          <strong>Error de Sincronización</strong>
+          <p>{{ errorMessage() }}</p>
+        </div>
+      </div>
+      <button class="action-icon-btn" (click)="loadData()" title="Reintentar">
+        <i class="fa-solid fa-rotate-right"></i>
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <div *ngIf="loading()" class="loading-container">
+        <div class="atom-spinner">
+          <div class="inner one"></div>
+          <div class="inner two"></div>
+          <div class="inner three"></div>
+        </div>
+        <p>Sincronizando registros de compra...</p>
+      </div>
+
+      <table class="admin-table" *ngIf="!loading() && !errorMessage()">
+        <thead>
+          <tr>
+            <th>Referencia / Temporal</th>
+            <th>Activo / Producto</th>
+            <th>Interventores</th>
+            <th>Flujo Monetario</th>
+            <th>Estado / Logística</th>
+            <th class="text-right">Operaciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of compras()">
+            
+            <td>
+              <span class="order-pill">#CMD-{{ c.id }}</span>
+              <div class="date-label">{{ c.fechaCompra | date:'dd MMM yyyy, HH:mm' }}</div>
+            </td>
+
+            <td>
+              <div class="prod-cell">
+                <div class="thumb-container">
+                  <img 
+                    [src]="getImageUrl(c.producto.imagenPrincipal)" 
+                    class="prod-thumb" 
+                    [alt]="c.producto.titulo">
+                  <div class="thumb-glass"></div>
+                </div>
+                <div class="prod-meta">
+                  <span class="prod-title" [title]="c.producto.titulo">{{ c.producto.titulo }}</span>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="user-cell">
+                  <app-avatar [avatarUrl]="c.comprador.avatar" [username]="c.comprador.user" [size]="20"></app-avatar>
+                  <span class="user-username">@{{ c.comprador.user }}</span>
+                  <span style="font-size: 0.6rem; color: var(--accent-2); font-weight: 800; text-transform: uppercase;">Comprador</span>
+                </div>
+                <div class="user-cell" *ngIf="c.vendedor">
+                  <app-avatar [avatarUrl]="c.vendedor.avatar" [username]="c.vendedor.user" [size]="20"></app-avatar>
+                  <span class="user-username">@{{ c.vendedor.user }}</span>
+                  <span style="font-size: 0.6rem; color: var(--warning); font-weight: 800; text-transform: uppercase;">Vendedor</span>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div style="display: flex; flex-direction: column;">
+                <span class="money-primary">{{ c.precioFinal | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</span>
+                <span class="money-secondary">Envío: {{ c.costoEnvio | currency:'EUR':'symbol':'1.2-2' }}</span>
+                <span class="money-bonus">Nexus: +{{ c.comisionNexus | currency:'EUR':'symbol':'1.2-2' }}</span>
+              </div>
+            </td>
+
+            <td>
+              <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start;">
+                <span class="badge" [ngClass]="getEstadoClasses(c.estado)">
+                  {{ c.estado }}
+                </span>
+                
+                <div *ngIf="c.envio" style="display: flex; flex-direction: column; gap: 2px;">
+                  <span style="font-size: 0.7rem; color: var(--text-dim); font-weight: 600;">
+                    <i class="fa-solid fa-truck" style="margin-right: 4px;"></i> {{ c.envio.transportista }}
+                  </span>
+                  <span style="font-family: monospace; font-size: 0.65rem; color: var(--accent-2); opacity: 0.8;">{{ c.envio.codigoEnvio }}</span>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button (click)="reembolsar(c.id)" title="Reembolsar" 
+                  class="action-icon-btn btn-danger"
+                  [disabled]="c.estado === 'REEMBOLSADA' || c.estado === 'CANCELADA'">
+                  <i class="fa-solid fa-rotate-left"></i>
+                </button>
+                <button (click)="cancelar(c.id)" title="Cancelar Pedido" 
+                  class="action-icon-btn"
+                  [disabled]="c.estado === 'REEMBOLSADA' || c.estado === 'CANCELADA' || c.estado === 'COMPLETADA' || c.estado === 'ENTREGADO'">
+                  <i class="fa-solid fa-ban"></i>
+                </button>
+                <button *ngIf="c.envio" (click)="regenerarEtiqueta(c.id)" title="Regenerar Etiqueta" 
+                  class="action-icon-btn" style="color: var(--accent-2); border-color: rgba(59, 130, 246, 0.2);"
+                  [disabled]="c.estado === 'ENVIADO' || c.estado === 'ENTREGADO' || c.estado === 'COMPLETADA'">
+                  <i class="fa-solid fa-barcode"></i>
+                </button>
+                <button *ngIf="c.envio" (click)="refrescarTracking(c.id)" title="Refrescar Tracking" 
+                  class="action-icon-btn" style="color: var(--success); border-color: rgba(16, 185, 129, 0.25);">
+                  <i class="fa-solid fa-arrows-rotate"></i>
+                </button>
+              </div>
+            </td>
+
+          </tr>
+          <tr *ngIf="compras().length === 0">
+            <td colspan="6">
+              <div style="padding: 60px; text-align: center; color: var(--text-dim);">
+                <i class="fa-solid fa-ghost" style="font-size: 2rem; margin-bottom: 16px; opacity: 0.3;"></i>
+                <p>No se han detectado transacciones con los criterios seleccionados.</p>
+                <button class="action-icon-btn" (click)="filters.reset()" style="width: auto; padding: 0 16px; margin: 16px auto; font-size: 0.8rem;" *ngIf="filters.dirty">
+                  <i class="fa-solid fa-filter-circle-xmark" style="margin-right: 8px;"></i> Limpiar filtros
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages() > 1 && !loading() && !errorMessage()">
+        <button class="page-btn" [disabled]="currentPage() === 0" (click)="onPageChange(currentPage() - 1)">
+          <i class="fa-solid fa-chevron-left"></i> Anterior
+        </button>
+        <span style="font-size: 0.9rem; font-weight: 500;">Página <strong>{{ currentPage() + 1 }}</strong> de {{ totalPages() }}</span>
+        <button class="page-btn" [disabled]="currentPage() >= totalPages() - 1" (click)="onPageChange(currentPage() + 1)">
+          Siguiente <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Glass Modal -->
+<div class="admin-modal-overlay" *ngIf="modalState() !== 'inactive'" (click)="modalState() === 'confirm' ? closeModal() : null">
+  <div class="admin-modal-card" (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h3 class="modal-title">{{ modalTitle() }}</h3>
+      <button class="close-btn" (click)="closeModal()" *ngIf="modalState() !== 'loading'">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      
+      <!-- Confirmation Mode -->
+      <div *ngIf="modalState() === 'confirm'" class="modal-mode-content">
+        <div class="modal-icon-container warning">
+          <i class="fa-solid fa-circle-question"></i>
+        </div>
+        <p class="modal-text">{{ modalMessage() }}</p>
+      </div>
+
+      <!-- Loading Mode -->
+      <div *ngIf="modalState() === 'loading'" class="modal-mode-content">
+        <div class="loading-spinner-container">
+          <div class="atom-spinner">
+            <div class="inner one"></div>
+            <div class="inner two"></div>
+            <div class="inner three"></div>
+          </div>
+          <p class="modal-text">Procesando solicitud...</p>
+        </div>
+      </div>
+
+      <!-- Success Mode -->
+      <div *ngIf="modalState() === 'success'" class="modal-mode-content">
+        <div class="modal-icon-container success">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <p class="modal-text">{{ modalMessage() }}</p>
+      </div>
+
+      <!-- Error Mode -->
+      <div *ngIf="modalState() === 'error'" class="modal-mode-content">
+        <div class="modal-icon-container error">
+          <i class="fa-solid fa-circle-xmark"></i>
+        </div>
+        <p class="modal-text">{{ modalMessage() }}</p>
+      </div>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer" *ngIf="modalState() !== 'loading'">
+      <button class="btn-cancel" (click)="closeModal()" *ngIf="modalState() === 'confirm'">
+        {{ modalCancelLabel() }}
+      </button>
+      <button class="btn-confirm" (click)="modalOnConfirm()" *ngIf="modalState() === 'confirm'">
+        {{ modalConfirmLabel() }}
+      </button>
+      <button class="btn-confirm" (click)="closeModal()" *ngIf="modalState() === 'success' || modalState() === 'error'">
+        Aceptar
+      </button>
+    </div>
+
+  </div>
+</div>

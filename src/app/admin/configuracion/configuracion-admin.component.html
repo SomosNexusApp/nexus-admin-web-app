@@ -1,0 +1,234 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div class="header-info">
+      <h1 class="page-title"><i class="fa-solid fa-sliders"></i> Configuración</h1>
+      <p class="page-subtitle">Ajustes globales de la plataforma Nexus</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="loadingData()" [disabled]="saving()">
+        <i class="fa-solid fa-rotate"></i> Descartar
+      </button>
+      <button class="btn-save" (click)="saveConfigs()" [disabled]="saving()">
+        <div class="loading-spinner" *ngIf="saving()"></div>
+        <i class="fa-solid fa-save" *ngIf="!saving()"></i>
+        {{ saving() ? 'Guardando...' : 'Guardar Cambios' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="settings-grid">
+    <!-- General -->
+    <div class="settings-card">
+      <div class="card-header">
+        <i class="fa-solid fa-globe"></i>
+        <h3>Ajustes Generales</h3>
+      </div>
+      <div class="settings-group">
+        <label>Nombre del Sitio</label>
+        <input type="text" class="fancy-input" [(ngModel)]="config.siteName">
+      </div>
+      <div class="settings-group">
+        <label>Tagline / Descripción</label>
+        <input type="text" class="fancy-input" [(ngModel)]="config.siteTagline">
+      </div>
+      <div class="settings-group">
+        <label>Email de Soporte</label>
+        <input type="email" class="fancy-input" [(ngModel)]="config.contactEmail">
+      </div>
+      <div class="switch-group">
+        <div class="switch-info">
+          <h4>Modo Mantenimiento</h4>
+          <p>Bloquea el acceso a todos los usuarios excepto al staff</p>
+        </div>
+        <label class="nexus-switch">
+          <input type="checkbox" [(ngModel)]="config.maintenanceMode">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Comercial -->
+    <div class="settings-card">
+      <div class="card-header">
+        <i class="fa-solid fa-coins"></i>
+        <h3>Comercio y Monetización</h3>
+      </div>
+      <div class="form-row">
+        <div class="settings-group">
+          <label>Comisión Nexus (%)</label>
+          <input type="number" class="fancy-input" [(ngModel)]="config.commissionRate">
+        </div>
+        <div class="settings-group">
+          <label>Moneda</label>
+          <input type="text" class="fancy-input" [(ngModel)]="config.currencyCode">
+        </div>
+      </div>
+      <div class="settings-group">
+        <label>Mínimo de Retirada (€)</label>
+        <input type="number" class="fancy-input" [(ngModel)]="config.minWithdrawal">
+      </div>
+      <div class="switch-group">
+        <div class="switch-info">
+          <h4>Pagos con Stripe</h4>
+          <p>Permitir transacciones directas mediante tarjeta</p>
+        </div>
+        <label class="nexus-switch">
+          <input type="checkbox" [(ngModel)]="config.stripeEnabled">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    
+
+    <!-- Correo / SMTP -->
+    <div class="settings-card">
+      <div class="card-header">
+        <i class="fa-solid fa-envelope"></i>
+        <h3>Servidor de Correo (SMTP)</h3>
+      </div>
+      <div class="form-row">
+        <div class="settings-group flex-2">
+          <label>Host SMTP</label>
+          <input type="text" class="fancy-input" [(ngModel)]="config.smtpHost">
+        </div>
+        <div class="settings-group flex-1">
+          <label>Puerto</label>
+          <input type="number" class="fancy-input" [(ngModel)]="config.smtpPort">
+        </div>
+      </div>
+      <div class="settings-group">
+        <label>Usuario SMTP</label>
+        <input type="text" class="fancy-input" [(ngModel)]="config.smtpUser">
+      </div>
+      <div class="settings-group">
+        <label>Password SMTP</label>
+        <input type="password" class="fancy-input" [(ngModel)]="config.smtpPass">
+      </div>
+    </div>
+
+    <!-- Seguridad -->
+    <div class="settings-card">
+      <div class="card-header">
+        <i class="fa-solid fa-shield-halved"></i>
+        <h3>Seguridad y Acceso</h3>
+      </div>
+      <div class="switch-group">
+        <div class="switch-info">
+          <h4>Requerir 2FA</h4>
+          <p>Obligar a todos los vendedores a usar autenticación en dos pasos</p>
+        </div>
+        <label class="nexus-switch">
+          <input type="checkbox" [(ngModel)]="config.require2FA">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="form-row">
+        <div class="settings-group">
+          <label>Intentos fallidos</label>
+          <input type="number" class="fancy-input" [(ngModel)]="config.maxLoginAttempts">
+        </div>
+        <div class="settings-group d-flex align-center pt-20">
+          <div class="switch-group w-100">
+            <div class="switch-info">
+              <h4>Captcha</h4>
+            </div>
+            <label class="nexus-switch">
+              <input type="checkbox" [(ngModel)]="config.recaptchaEnabled">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="switch-group">
+        <div class="switch-info">
+          <h4>Registro Abierto</h4>
+          <p>Permitir que nuevos usuarios se registren libremente</p>
+        </div>
+        <label class="nexus-switch">
+          <input type="checkbox" [(ngModel)]="config.openRegistration">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Almacenamiento -->
+    <div class="settings-card">
+      <div class="card-header">
+        <i class="fa-solid fa-cloud"></i>
+        <h3>Almacenamiento y CDN</h3>
+      </div>
+      <div class="settings-group">
+        <label>Proveedor</label>
+        <select class="fancy-input" [(ngModel)]="config.storageProvider">
+          <option value="Cloudinary">Cloudinary</option>
+          <option value="AWS S3">Amazon S3</option>
+          <option value="Local">Disco Local</option>
+        </select>
+      </div>
+      <div class="settings-group">
+        <label>Cloud Name / Bucket</label>
+        <input type="text" class="fancy-input" [(ngModel)]="config.cloudinaryName">
+      </div>
+      <div class="settings-group">
+        <label>API Key / Access Key</label>
+        <input type="password" class="fancy-input" [(ngModel)]="config.cloudinaryApiKey">
+      </div>
+    </div>
+
+    <!-- Moderación -->
+    <div class="settings-card moderation-card">
+      <div class="card-header">
+        <i class="fa-solid fa-hand-holding-hand"></i>
+        <h3>Moderación Automática ({{ keywordList().length }} palabras)</h3>
+        <button class="btn-text-only" (click)="resetToDefaults()">
+          <i class="fa-solid fa-undo"></i> Restablecer Base
+        </button>
+      </div>
+
+      <div class="switch-group">
+        <div class="switch-info">
+          <h4>Aprobar Productos Automáticamente</h4>
+          <p>Los productos nuevos se publicarán sin revisión manual</p>
+        </div>
+        <label class="nexus-switch">
+          <input type="checkbox" [(ngModel)]="config.autoApproveProducts">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="moderation-controls">
+        <div class="search-box">
+          <i class="fa-solid fa-search"></i>
+          <input type="text" placeholder="Buscar o añadir palabra..." 
+                 [(ngModel)]="searchTerm" 
+                 (keyup.enter)="addKeyword(searchTerm)">
+        </div>
+        <button class="btn-add-tag" (click)="addKeyword(searchTerm)">
+          <i class="fa-solid fa-plus"></i> Añadir
+        </button>
+      </div>
+
+      <div class="tag-cloud-container">
+        <div class="tag-pill" *ngFor="let word of filteredKeywords()">
+          {{ word }}
+          <i class="fa-solid fa-times" (click)="removeKeyword(word)"></i>
+        </div>
+        <div class="empty-results" *ngIf="filteredKeywords().length === 0">
+           No se han encontrado coincidencias para "{{ searchTerm }}"
+        </div>
+      </div>
+
+      <div class="moderation-info">
+        <i class="fa-solid fa-info-circle"></i>
+        Presiona Enter para añadir una nueva palabra prohibida. El sistema censurará estas palabras en el chat instantáneamente.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notification -->
+<div class="save-toast" *ngIf="showSuccess()">
+  <i class="fa-solid fa-check-circle"></i>
+  Configuración sincronizada con el servidor
+</div>

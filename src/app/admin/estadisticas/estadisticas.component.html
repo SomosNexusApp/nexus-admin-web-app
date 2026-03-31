@@ -2,7 +2,7 @@
   <div class="stats-header">
     <div class="title-section">
       <h1 class="page-title">
-        <i class="fa-solid fa-chart-line"></i> 
+        <i class="fa-solid fa-chart-line"></i>
         Análisis Vital
       </h1>
       <div class="live-indicator">
@@ -11,13 +11,13 @@
       </div>
     </div>
     <div class="time-section">
-      <i class="fa-solid fa-clock-rotate-left"></i> {{ lastUpdate() | date:'HH:mm:ss' }}
+      <i class="fa-solid fa-clock-rotate-left"></i> {{ lastUpdate() | date: 'HH:mm:ss' }}
     </div>
   </div>
 
   @if (loading() && !kpis()) {
     <div class="stats-skeleton">
-      <div class="skel-card" *ngFor="let i of [1,2,3,4]"></div>
+      <div class="skel-card" *ngFor="let i of [1, 2, 3, 4]"></div>
     </div>
   } @else {
     <!-- Row 1: KPI Grid -->
@@ -53,8 +53,8 @@
           <div class="kpi-trend pos">{{ kpis()?.revenueDelta }}%</div>
         </div>
         <div class="kpi-main">
-          <span class="kpi-value">{{ kpis()?.revenueMes | number:'1.2-2' }}€</span>
-          <span class="kpi-label">Revenue Mensual</span>
+          <span class="kpi-value">{{ kpis()?.revenueMes | number: '1.2-2' }}€</span>
+          <span class="kpi-label">Comisiones Mes</span>
         </div>
       </div>
 
@@ -73,6 +73,47 @@
       </div>
     </div>
 
+    <!-- Row 1.5: Más Datos -->
+    <div class="section-divider">
+      <span><i class="fa-solid fa-plus"></i> Más Datos Nexus</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="kpi-row secondary">
+      <!-- volumen de ventas Total -->
+      <div class="glass kpi-card nexus">
+        <div class="kpi-top">
+          <div class="kpi-icon billing"><i class="fa-solid fa-cart-shopping"></i></div>
+        </div>
+        <div class="kpi-main">
+          <span class="kpi-value small">{{ kpis()?.nexusGmvTotal | number: '1.2-2' }}€</span>
+          <span class="kpi-label">Volumen de Ventas (Total GMV)</span>
+        </div>
+      </div>
+
+      <!-- Comisiones Totales (Facturación real) -->
+      <div class="glass kpi-card nexus">
+        <div class="kpi-top">
+          <div class="kpi-icon money"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+        </div>
+        <div class="kpi-main">
+          <span class="kpi-value small">{{ kpis()?.nexusComisionTotal | number: '1.2-2' }}€</span>
+          <span class="kpi-label">Facturación Nexus (Comisiones Totales)</span>
+        </div>
+      </div>
+
+      <!-- Comisiones Mes -->
+      <div class="glass kpi-card nexus">
+        <div class="kpi-top">
+          <div class="kpi-icon comm-month"><i class="fa-solid fa-calendar-check"></i></div>
+        </div>
+        <div class="kpi-main">
+          <span class="kpi-value small">{{ kpis()?.nexusComisionMes | number: '1.2-2' }}€</span>
+          <span class="kpi-label">Comisiones este Mes</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Row 2: Charts -->
     <div class="main-grid">
       <!-- Chart Left -->
@@ -81,7 +122,7 @@
           <span><i class="fa-solid fa-bolt"></i> Dinámica de Usuarios</span>
           <small>Últimos 7 días</small>
         </div>
-        
+
         @if (usuariosDia().length > 0) {
           <div class="bar-container">
             @for (d of usuariosDia(); track d.dia) {
@@ -108,7 +149,7 @@
           <span><i class="fa-solid fa-fire-flame-curved"></i> Volumen Transaccional</span>
           <small>Frecuencia semanal</small>
         </div>
-        
+
         @if (comprasDia().length > 0) {
           <div class="bar-container purchases">
             @for (d of comprasDia(); track d.dia) {
@@ -129,10 +170,37 @@
         }
       </div>
 
+      <!-- Chart Commissions Full Width -->
+      <div class="glass chart-box commissions-full">
+        <div class="chart-title">
+          <span><i class="fa-solid fa-hand-holding-dollar"></i> Evolución de Comisiones (Revenue)</span>
+          <small>Últimos 30 días</small>
+        </div>
+
+        @if (comisionesDia().length > 0) {
+          <div class="bar-container commissions">
+            @for (d of comisionesDia(); track d.dia) {
+              <div class="bar-col">
+                <span class="bar-val">{{ d.valor | number:'1.1-1' }}€</span>
+                <div class="bar-fill" [style.height.%]="getPercent(d.valor, comisionesDia())">
+                  <div class="bar-glow"></div>
+                </div>
+                <span class="bar-label">{{ d.dia | date:'dd/MM' }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <i class="fa-solid fa-sack-dollar"></i>
+            <p>Datos de comisiones insuficientes para este periodo</p>
+          </div>
+        }
+      </div>
+
       <!-- Leaderboard Bottom -->
       <div class="glass leader-box">
         <div class="chart-title">
-          <span><i class="fa-solid fa-crown"></i> Nexus Elite Leaderboard</span>
+          <span><i class="fa-solid fa-crown"></i> Ranking de ventas</span>
           <small>Vendedores con mayor tracción</small>
         </div>
 
@@ -148,14 +216,17 @@
                 <div class="leader-graph">
                   <div class="leader-bar" [style.width.%]="(v.totalVentas / 500) * 100"></div>
                 </div>
-                <div class="leader-revenue">{{ v.revenue | number:'1.2-2' }} €</div>
+                <div class="leader-revenue">{{ v.revenue | number: '1.2-2' }} €</div>
               </div>
             }
           </div>
         } @else {
           <div class="empty-leaderboard">
             <i class="fa-solid fa-hourglass-start"></i>
-            <p>Todavía no hay transacciones para analizar. El ranking se forjará con la primera venta.</p>
+            <p>
+              Todavía no hay transacciones para analizar. El ranking se forjará con la primera
+              venta.
+            </p>
           </div>
         }
       </div>

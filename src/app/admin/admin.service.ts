@@ -4,7 +4,7 @@ import { environment } from '../../environments/enviroment';
 import {
   AdminKpis, DiaValorDTO, CatValorDTO, AdminUsuario, AdminReporte,
   AdminDevolucion, AdminSancion, AuditLogEntry, AdminHealth,
-  AdminFraudeFlag, AdminProductoSospechoso, PagedResult
+  AdminFraudeFlag, AdminProductoSospechoso, PagedResult, AdminContrato, AdminCompra
 } from './admin.models';
 import { Observable } from 'rxjs';
 
@@ -29,6 +29,10 @@ export class AdminService {
 
   getComprasPorDia(): Observable<DiaValorDTO[]> {
     return this.http.get<DiaValorDTO[]>(`${this.base}/estadisticas/compras-dia`);
+  }
+
+  getComisionesPorDia(): Observable<DiaValorDTO[]> {
+    return this.http.get<DiaValorDTO[]>(`${this.base}/estadisticas/comisiones-dia`);
   }
 
   getProductosPorCategoria(): Observable<CatValorDTO[]> {
@@ -144,4 +148,72 @@ export class AdminService {
   exportAuditLog(): Observable<Blob> {
     return this.http.get(`${this.base}/audit/export`, { responseType: 'blob' });
   }
+
+  // ── Contratos ────────────────────────────────────────────────────────────
+  getContratos(): Observable<AdminContrato[]> {
+    return this.http.get<AdminContrato[]>(`${this.base}/contratos`);
+  }
+
+  createContrato(empresaId: number, contrato: Partial<AdminContrato>): Observable<AdminContrato> {
+    return this.http.post<AdminContrato>(`${this.base}/contratos/${empresaId}`, contrato);
+  }
+
+  updateContrato(id: number, contrato: Partial<AdminContrato>): Observable<AdminContrato> {
+    return this.http.put<AdminContrato>(`${this.base}/contratos/${id}`, contrato);
+  }
+
+  deleteContrato(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/contratos/${id}`);
+  }
+
+  // ── Empresas ─────────────────────────────────────────────────────────────
+  getEmpresas(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/api/empresa`);
+  }
+
+  // ── Configuración ────────────────────────────────────────────────────────
+  getConfigs(): Observable<Map<String, String>> {
+    return this.http.get<Map<String, String>>(`${this.base}/config`);
+  }
+
+  saveConfigsBatch(configs: any): Observable<void> {
+    return this.http.post<void>(`${this.base}/config/batch`, configs);
+  }
+
+  getModerationWords(): Observable<string> {
+    return this.http.get(`${this.base}/config/moderation-words`, { responseType: 'text' });
+  }
+
+  // ── Compras ──────────────────────────────────────────────────────────────
+  getCompras(params: any): Observable<PagedResult<AdminCompra>> {
+    return this.http.get<PagedResult<AdminCompra>>(`${this.base}/compras`, { params });
+  }
+
+  reembolsarCompra(id: number): Observable<{mensaje: string}> {
+    return this.http.post<{mensaje: string}>(`${this.base}/compras/${id}/reembolsar`, {});
+  }
+
+  regenerarEtiquetaCompra(id: number): Observable<{mensaje: string, nuevoCodigo: string}> {
+    return this.http.post<{mensaje: string, nuevoCodigo: string}>(`${this.base}/compras/${id}/regenerar-etiqueta`, {});
+  }
+
+  refreshTrackingCompra(id: number): Observable<any> {
+    return this.http.post<any>(`${this.base}/compras/${id}/refresh-tracking`, {});
+  }
+
+  cancelarCompra(id: number): Observable<{mensaje: string}> {
+    return this.http.post<{mensaje: string}>(`${this.base}/compras/${id}/cancelar`, {});
+  }
+
+  getComprasSoporteSession(sessionId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/api/admin/soporte/sessions/${sessionId}/compras`);
+  }
+
+  reembolsarCompraDesdeSoporte(sessionId: number, compraId: number, motivo: string): Observable<{ mensaje: string }> {
+    return this.http.post<{ mensaje: string }>(
+      `${environment.apiUrl}/api/admin/soporte/sessions/${sessionId}/compras/${compraId}/reembolsar`,
+      { motivo },
+    );
+  }
 }
+

@@ -17,6 +17,7 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
   kpis = signal<AdminKpis | null>(null);
   usuariosDia = signal<DiaValorDTO[]>([]);
   comprasDia = signal<DiaValorDTO[]>([]);
+  comisionesDia = signal<DiaValorDTO[]>([]);
   topVendedores = signal<any[]>([]);
   loading = signal(true);
   lastUpdate = signal(new Date());
@@ -42,12 +43,14 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
       kpis: this.adminSvc.getKpis(),
       usuarios: this.adminSvc.getUsuariosPorDia(),
       compras: this.adminSvc.getComprasPorDia(),
+      comisiones: this.adminSvc.getComisionesPorDia(),
       vendedores: this.adminSvc.getTopVendedores()
     }).pipe(
-      tap(({ kpis, usuarios, compras, vendedores }) => {
+      tap(({ kpis, usuarios, compras, comisiones, vendedores }) => {
         this.kpis.set(kpis);
         this.usuariosDia.set(usuarios || []);
         this.comprasDia.set(compras || []);
+        this.comisionesDia.set(comisiones || []);
         this.topVendedores.set(vendedores || []);
       })
     );

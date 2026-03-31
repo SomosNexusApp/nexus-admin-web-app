@@ -13,6 +13,10 @@ export interface AdminKpis {
   revenueDelta: number;
   reportesPendientes: number;
   reportesDelta: number;
+  nexusGmvTotal: number;
+  nexusComisionTotal: number;
+  nexusComisionMes: number;
+  nexusComisionAnio: number;
 }
 
 export interface DiaValorDTO {
@@ -177,6 +181,9 @@ export interface AdminOferta {
   actor: { id: number; user: string; avatar?: string };
   categoria?: { id: number; nombre: string };
   votos?: number;
+  imagenPrincipal?: string;
+  tienda?: string;
+  urlOferta?: string;
 }
 
 export interface AdminVehiculo {
@@ -212,8 +219,10 @@ export interface AdminCategoria {
 export interface AdminCupon {
   id: number;
   codigo: string;
-  tipo: 'PORCENTAJE' | 'FIJO' | 'ENVIO_GRATIS';
+  tipo: 'PORCENTAJE' | 'FIJO' | 'ENVIO_GRATIS' | 'COMBINADO';
   valor?: number;
+  valorFijo?: number;
+  valorPorcentaje?: number;
   importeMinimo?: number;
   topeMaximo?: number;
   alcance: 'TODOS' | 'USUARIO' | 'GRUPO';
@@ -248,3 +257,46 @@ export interface CuponStats {
   mayorAhorro: string;
 }
 
+
+export interface AdminEmpresa {
+  id: number;
+  nombreComercial: string;
+  cif: string;
+  logo?: string;
+}
+
+export interface AdminContrato {
+  id: number;
+  tipoContrato: 'BANNER' | 'PUBLICACION';
+  estado: string;
+  fecha: string;
+  fechaInicio?: string;
+  fechaFin?: string;
+  monto: number;
+  descripcion?: string;
+  productoId?: number | null;
+  textoBanner?: string | null;
+  urlClick?: string | null;
+  empresa: AdminEmpresa;
+}
+
+export interface AdminEnvio {
+  id: number;
+  codigoEnvio: string;
+  transportista: string;
+  estado: string;
+}
+
+export interface AdminCompra {
+  id: number;
+  precioFinal: number;
+  costoEnvio: number;
+  comisionNexus: number;
+  estado: string;
+  fechaCompra: string;
+  metodoEntrega: string;
+  comprador: { id: number; user: string; avatar?: string };
+  vendedor: { id: number; user: string; avatar?: string };
+  producto: { id: number; titulo: string; imagenPrincipal?: string };
+  envio?: AdminEnvio;
+}

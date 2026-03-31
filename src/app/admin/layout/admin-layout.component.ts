@@ -72,16 +72,18 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     {
       title: 'Comercio',
       items: [
+        { label: 'Compras', icon: 'fa-shopping-cart', route: '/compras' },
         { label: 'Productos', icon: 'fa-box', route: '/productos' },
         { label: 'Ofertas', icon: 'fa-tag', route: '/ofertas' },
         { label: 'Cupones', icon: 'fa-ticket', route: '/cupones' },
         { label: 'Vehículos', icon: 'fa-car', route: '/vehiculos' },
-        { label: 'Categorías', icon: 'fa-layer-group', route: '/categorias' },
       ],
     },
     {
       title: 'Comunicación',
       items: [
+        { label: 'Soporte chat', icon: 'fa-comments', route: '/soporte-chat' },
+        { label: 'Notificaciones', icon: 'fa-bell', route: '/notificaciones' },
         { label: 'Newsletter', icon: 'fa-envelope', route: '/newsletter' },
         { label: 'Contratos', icon: 'fa-file-contract', route: '/contratos' },
       ],

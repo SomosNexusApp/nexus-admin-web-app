@@ -1,0 +1,211 @@
+<div class="admin-page">
+  <div class="page-header">
+    <h1 class="page-title"><i class="fa-solid fa-paper-plane"></i> Centro de Emisiones</h1>
+    <p class="page-subtitle">Comunica las novedades de Nexus a toda la comunidad de suscriptores</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <i class="fa-solid fa-users stat-icon"></i>
+      <span class="stat-label">Total Registrados</span>
+      <span class="stat-value" [class.loading-pulse]="loading()">{{ stats()?.total || 0 }}</span>
+    </div>
+    <div class="stat-card">
+      <i class="fa-solid fa-user-check stat-icon" style="color: #10b981;"></i>
+      <span class="stat-label">Suscriptores Activos</span>
+      <span class="stat-value" style="color: #10b981;" [class.loading-pulse]="loading()">{{ stats()?.activos || 0 }}</span>
+    </div>
+    <div class="stat-card">
+      <i class="fa-solid fa-clock stat-icon" style="color: #f59e0b;"></i>
+      <span class="stat-label">Pendientes Doble Opt-In</span>
+      <span class="stat-value" style="color: #f59e0b;" [class.loading-pulse]="loading()">{{ stats()?.pendientes || 0 }}</span>
+    </div>
+    <div class="stat-card">
+      <i class="fa-solid fa-user-minus stat-icon" style="color: #ef4444;"></i>
+      <span class="stat-label">Bajas / Unsubscribed</span>
+      <span class="stat-value" style="color: #ef4444;" [class.loading-pulse]="loading()">{{ stats()?.bajas || 0 }}</span>
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="tabs-nav">
+    <button class="tab-btn" [class.active]="activeTab === 'manual'" (click)="setTab('manual')">
+      <i class="fa-solid fa-hand-pointer"></i> Emisión Manual
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'automated'" (click)="setTab('automated')">
+      <i class="fa-solid fa-robot"></i> Automatización Semanal
+    </button>
+  </div>
+
+  <!-- Editor & Preview -->
+  <div class="editor-container">
+    <!-- Manual Mode Form -->
+    <div class="admin-card" *ngIf="activeTab === 'manual'">
+      <div class="card-title"><i class="fa-solid fa-pen-nib"></i> Componer Boletín</div>
+      
+      <div class="form-group">
+        <label>Asunto del Correo</label>
+        <input type="text" [(ngModel)]="asunto" placeholder="Ej: ¡Nuevas ofertas flash esta semana! ⚡" class="fancy-input">
+      </div>
+
+      <!-- Toolbar -->
+      <div class="editor-toolbar">
+        <button (click)="insertTag('h2')" title="Título"><i class="fa-solid fa-heading"></i></button>
+        <button (click)="insertTag('p')" title="Párrafo"><i class="fa-solid fa-paragraph"></i></button>
+        <button (click)="insertTag('b')" title="Negrita"><i class="fa-solid fa-bold"></i></button>
+        <button (click)="insertTag('ul')" title="Lista"><i class="fa-solid fa-list-ul"></i></button>
+        <button (click)="insertTag('btn')" title="Botón"><i class="fa-solid fa-link"></i></button>
+        <button (click)="insertTag('card')" title="Tarjeta de Datos"><i class="fa-solid fa-id-card"></i></button>
+        <div class="toolbar-divider"></div>
+        <span class="toolbar-label">Plantillas:</span>
+        <button *ngFor="let t of templates" (click)="applyTemplate(t)" [title]="t.name">
+          <i class="fa-solid" [ngClass]="t.icon"></i>
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label>Cuerpo del Mensaje (Soporta HTML)</label>
+        <textarea id="manual-editor" [(ngModel)]="contenido" placeholder="<h1>Hola Nexus!</h1><p>Escribe aquí tu contenido...</p>" class="fancy-textarea"></textarea>
+      </div>
+
+      <div class="actions-bar">
+        <button class="btn-action btn-test" [disabled]="sending() || !asunto || !contenido" (click)="openTestModal()">
+          <i class="fa-solid fa-flask"></i> Enviar Prueba
+        </button>
+        <button class="btn-action btn-broadcast" [disabled]="sending() || !asunto || !contenido" (click)="confirmSendAll()">
+          <i class="fa-solid fa-bullhorn"></i> <span *ngIf="!sending()">Emitir a Todos</span>
+          <i *ngIf="sending()" class="fa-solid fa-atom fa-spin"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Automated Mode Form -->
+    <div class="admin-card" *ngIf="activeTab === 'automated'">
+      <div class="card-title"><i class="fa-solid fa-gear"></i> Configuración del Digest Semanal</div>
+      
+      <div class="automation-header">
+        <div class="status-info">
+          <span class="status-badge" [class.active]="config().automatedEnabled">
+            {{ config().automatedEnabled ? 'ACTIVO' : 'DESACTIVADO' }}
+          </span>
+          <p class="status-text">Envío automático de recomendaciones (Productos + Ofertas)</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" [(ngModel)]="config().automatedEnabled">
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+      <div class="config-grid">
+        <div class="form-group">
+          <label>Día de Envío</label>
+          <select [(ngModel)]="config().dayOfWeek" class="fancy-input">
+            <option [value]="1">Lunes</option>
+            <option [value]="2">Martes</option>
+            <option [value]="3">Miércoles</option>
+            <option [value]="4">Jueves</option>
+            <option [value]="5">Viernes</option>
+            <option [value]="6">Sábado</option>
+            <option [value]="7">Domingo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Hora de Envío</label>
+          <input type="time" [(ngModel)]="config().timeOfDay" class="fancy-input">
+        </div>
+      </div>
+
+      <div class="info-box">
+        <i class="fa-solid fa-magic-wand-sparkles"></i>
+        <div>
+          <strong>Inteligencia de Selección</strong>
+          <p>El sistema selecciona automáticamente los 3 productos más recientes y las 3 ofertas con mayor puntuación de Sparks para generar el boletín.</p>
+        </div>
+      </div>
+
+      <div class="actions-bar">
+        <button class="btn-action btn-test" (click)="saveConfig()">
+          <i class="fa-solid fa-save"></i> Guardar Configuración
+        </button>
+        <button class="btn-action btn-broadcast" [disabled]="sending()" (click)="confirmTriggerWeekly()">
+          <i class="fa-solid fa-bolt"></i> Forzar Envío Ahora
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Preview -->
+    <div class="admin-card">
+      <div class="card-title">
+        <i class="fa-solid fa-eye"></i> 
+        Vista Previa: {{ activeTab === 'manual' ? (asunto || 'Sin Asunto') : 'Digest Semanal Nexus Elite' }}
+      </div>
+      <div class="preview-window">
+        <div *ngIf="activeTab === 'manual' && !contenido" class="preview-empty">
+          <i class="fa-solid fa-laptop-code"></i>
+          <p>Escribe algo para ver cómo quedará el correo</p>
+        </div>
+        <div *ngIf="(activeTab === 'manual' && contenido) || (activeTab === 'automated' && weeklyPreviewHtml())" 
+             [innerHTML]="previewHtml" class="preview-render"></div>
+      </div>
+      <p class="text-muted" style="margin-top: 12px; font-size: 0.8rem; text-align: center;">
+        <i class="fa-solid fa-info-circle"></i> La previsualización incluye automáticamente el encabezado y pie de página de Nexus Elite.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Test Email Modal -->
+<div class="modal-overlay" *ngIf="showTestModal" (click)="showTestModal = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3 class="card-title"><i class="fa-solid fa-paper-plane"></i> Enviar Prueba</h3>
+    <p class="page-subtitle" style="margin-bottom: 24px;">Introduce el email donde quieres recibir este test:</p>
+    
+    <div class="form-group">
+      <input type="email" [(ngModel)]="testEmail" placeholder="tu@email.com" class="fancy-input">
+    </div>
+
+    <div class="actions-bar">
+      <button class="btn-action btn-test" (click)="showTestModal = false">Cancelar</button>
+      <button class="btn-action btn-broadcast" [disabled]="!testEmail || sending()" (click)="enviarPrueba()">
+        <i class="fa-solid fa-check"></i> Enviar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Send All Modal -->
+<div class="modal-overlay" *ngIf="showConfirmSendModal" (click)="showConfirmSendModal = false">
+  <div class="modal confirmation-modal" (click)="$event.stopPropagation()">
+    <div class="modal-icon warning"><i class="fa-solid fa-triangle-exclamation"></i></div>
+    <h3 class="modal-title">¿Confirmar Emisión Masiva?</h3>
+    <p class="modal-text">Estás a punto de enviar este boletín a <b>{{ stats()?.activos || 0 }} suscriptores</b>. Esta acción es irreversible.</p>
+    
+    <div class="modal-details" *ngIf="asunto">
+      <p><strong>Asunto:</strong> {{ asunto }}</p>
+    </div>
+
+    <div class="actions-bar center">
+      <button class="btn-secondary" (click)="showConfirmSendModal = false">Cancelar</button>
+      <button class="btn-danger" (click)="enviarATodos()">
+        <i class="fa-solid fa-paper-plane"></i> Sí, Emitir Ahora
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Trigger Weekly Modal -->
+<div class="modal-overlay" *ngIf="showConfirmWeeklyModal" (click)="showConfirmWeeklyModal = false">
+  <div class="modal confirmation-modal" (click)="$event.stopPropagation()">
+    <div class="modal-icon info"><i class="fa-solid fa-robot"></i></div>
+    <h3 class="modal-title">Forzar Boletín Semanal</h3>
+    <p class="modal-text">Se generará y enviará el resumen automático de productos y ofertas con mayor puntuación a todos los suscriptores activos.</p>
+
+    <div class="actions-bar center">
+      <button class="btn-secondary" (click)="showConfirmWeeklyModal = false">Cancelar</button>
+      <button class="btn-action btn-broadcast" (click)="triggerWeekly()">
+        <i class="fa-solid fa-bolt"></i> Iniciar Emisión
+      </button>
+    </div>
+  </div>
+</div>

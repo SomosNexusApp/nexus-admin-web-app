@@ -402,3 +402,100 @@
   .stats-header { flex-direction: column; align-items: flex-start; gap: 20px; }
   .stats-page { padding: 20px; }
 }
+
+/* ── Más Datos Section ── */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 40px 0 24px;
+  padding: 0 10px;
+}
+
+.section-divider span {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #6b6b8a;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-divider i {
+  color: #7c3aed;
+}
+
+.divider-line {
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(90deg, rgba(124, 58, 237, 0.2), transparent);
+}
+
+.kpi-row.secondary {
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 48px;
+}
+
+.kpi-card.nexus {
+  background: rgba(124, 58, 237, 0.03);
+  border-color: rgba(124, 58, 237, 0.1);
+}
+
+.kpi-icon.billing { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.kpi-icon.comm-month { background: rgba(99, 102, 241, 0.1); color: #818cf8; }
+.kpi-icon.comm-year { background: rgba(245, 158, 11, 0.1); color: #fbbf24; }
+
+.kpi-value.small {
+  font-size: 1.8rem;
+}
+
+.kpi-card.nexus.promo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.promo-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #a78bfa;
+}
+
+.promo-content i {
+  font-size: 2rem;
+  filter: drop-shadow(0 0 10px rgba(124, 58, 237, 0.5));
+}
+
+.promo-content span {
+  font-weight: 900;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* ── Commissions Chart ── */
+.commissions-full {
+  grid-column: span 12;
+  margin-top: 24px;
+}
+
+.bar-container.commissions .bar-fill {
+  background: linear-gradient(to top, rgba(167, 139, 250, 0.05), rgba(167, 139, 250, 0.45));
+  border-color: rgba(167, 139, 250, 0.2);
+}
+
+.bar-container.commissions .bar-glow {
+  background: #c084fc;
+  box-shadow: 0 0 20px rgba(192, 132, 252, 0.8);
+}
+
+.bar-container.commissions .bar-val {
+  color: #d8b4fe;
+}

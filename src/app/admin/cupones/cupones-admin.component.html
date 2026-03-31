@@ -84,6 +84,7 @@
                   <span class="main-val">
                     @if (c.tipo === 'PORCENTAJE') { {{ c.valor }}% }
                     @else if (c.tipo === 'FIJO') { {{ c.valor | currency:'EUR' }} }
+                    @else if (c.tipo === 'COMBINADO') { {{ c.valorFijo | currency:'EUR' }} + {{ c.valorPorcentaje }}% }
                     @else { Envío Gratis }
                   </span>
                   @if (c.topeMaximo) { <span class="sub-val">Tope: {{ c.topeMaximo | currency:'EUR' }}</span> }
@@ -178,13 +179,29 @@
                 <div class="radio-card" [class.selected]="form.tipo === 'ENVIO_GRATIS'" (click)="form.tipo = 'ENVIO_GRATIS'">
                   <i class="fa-solid fa-truck"></i> <span>Envío Gratis</span>
                 </div>
+                <div class="radio-card" [class.selected]="form.tipo === 'COMBINADO'" (click)="form.tipo = 'COMBINADO'">
+                  <i class="fa-solid fa-plus-minus"></i> <span>Combinado</span>
+                </div>
               </div>
             </div>
 
-            @if (form.tipo !== 'ENVIO_GRATIS') {
+            @if (form.tipo === 'PORCENTAJE' || form.tipo === 'FIJO') {
               <div class="form-section">
                 <label>Valor del Descuento ({{ form.tipo === 'PORCENTAJE' ? '%' : '€' }})</label>
                 <input type="number" [(ngModel)]="form.valor" class="fancy-input">
+              </div>
+            }
+
+            @if (form.tipo === 'COMBINADO') {
+              <div class="form-grid">
+                <div class="form-section">
+                  <label>Valor Fijo (€)</label>
+                  <input type="number" [(ngModel)]="form.valorFijo" class="fancy-input">
+                </div>
+                <div class="form-section">
+                  <label>Valor Porcentaje (%)</label>
+                  <input type="number" [(ngModel)]="form.valorPorcentaje" class="fancy-input">
+                </div>
               </div>
             }
 
@@ -320,7 +337,13 @@
              <div class="summary-card">
                <h4>Resumen del Cupón</h4>
                <div class="summary-row"><span>Código:</span> <strong>{{ form.codigo }}</strong></div>
-               <div class="summary-row"><span>Descuento:</span> <strong>{{ form.valor }} {{ form.tipo === 'PORCENTAJE' ? '%' : '€' }}</strong></div>
+               <div class="summary-row">
+                 <span>Descuento:</span> 
+                 <strong>
+                   @if (form.tipo === 'COMBINADO') { {{ form.valorFijo }}€ + {{ form.valorPorcentaje }}% }
+                   @else { {{ form.valor }} {{ form.tipo === 'PORCENTAJE' ? '%' : '€' }} }
+                 </strong>
+               </div>
                <div class="summary-row"><span>Alcance:</span> <span>{{ form.alcance }}</span></div>
              </div>
           </div>

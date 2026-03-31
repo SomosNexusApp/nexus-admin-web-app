@@ -1,0 +1,234 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title"><i class="fa-solid fa-file-signature"></i> Contratos de Publicidad</h1>
+      <p class="page-subtitle">
+        Cada alta envía una <strong>propuesta</strong> a la empresa (notificación in-app). La empresa acepta y paga con
+        Stripe; al activarse, el banner o la publicación patrocinada quedan visibles según el tipo.
+      </p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-primary" (click)="openCreateModal()">
+        <i class="fa-solid fa-plus"></i> Nueva propuesta
+      </button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon purple"><i class="fa-solid fa-file-circle-check"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Contratos Activos</span>
+        <span class="stat-value">{{ stats().activos }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon blue"><i class="fa-solid fa-euro-sign"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Ingresos Proyectados</span>
+        <span class="stat-value">{{ stats().totalMonto | currency:'EUR' }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orange"><i class="fa-solid fa-clock"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Pendientes (propuesta / pago)</span>
+        <span class="stat-value">{{ stats().pendientesAccion }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="glass-panel">
+    <div class="panel-header">
+      <h2 class="panel-title">Listado de Contratos</h2>
+      <div class="panel-filters">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Buscar por empresa..." (input)="onSearch($event)">
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="nexus-table">
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>Tipo</th>
+            <th>Estado</th>
+            <th>Periodo</th>
+            <th>Monto</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of filteredContratos()">
+            <td>
+              <div class="company-cell">
+                <img [src]="c.empresa.logo || 'assets/default-company.png'" class="company-logo">
+                <div class="company-info">
+                  <span class="company-name">{{ c.empresa.nombreComercial }}</span>
+                  <span class="company-cif">{{ c.empresa.cif }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="badge-type" [class]="c.tipoContrato.toLowerCase() || 'banner'">
+                {{ c.tipoContrato || '---' }}
+              </span>
+            </td>
+            <td>
+              <span class="status-pill" [class]="c.estado.toLowerCase() || 'draft'">
+                {{ labelEstado(c.estado) }}
+              </span>
+            </td>
+            <td>
+              <div class="date-cell">
+                <span class="date">{{ (c.fechaInicio | date:'dd/MM/yy') || '--/--/--' }}</span>
+                <i class="fa-solid fa-arrow-right"></i>
+                <span class="date">{{ (c.fechaFin | date:'dd/MM/yy') || '--/--/--' }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="amount">{{ (c.monto | currency:'EUR') || '0,00 €' }}</span>
+            </td>
+            <td>
+              <div class="actions">
+                <button class="btn-icon" (click)="openEditModal(c)" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn-icon danger" (click)="confirmDelete(c)" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="filteredContratos().length === 0">
+            <td colspan="6" class="empty-state">
+              <i class="fa-solid fa-folder-open"></i>
+              <p>No se encontraron contratos registrados</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Create/Edit -->
+<div class="modal-overlay" *ngIf="showModal" (click)="handleOverlayClick($event)">
+  <div class="modal elite-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <i class="fa-solid" [class.fa-plus]="!editingId" [class.fa-pen]="editingId"></i>
+        {{ editingId ? 'Editar contrato' : 'Nueva propuesta de publicidad' }}
+      </h3>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <form #contractForm="ngForm">
+        <p *ngIf="!editingId" class="modal-hint">
+          Se enviará al estado <strong>Propuesta enviada</strong> y la empresa recibirá una notificación con el
+          presupuesto. No hace falta elegir «Activo» aquí: eso ocurre tras el pago en Stripe.
+        </p>
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label>Empresa</label>
+            <div class="autocomplete-container" *ngIf="!selectedEmpresa(); else selectedTpl">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input 
+                  type="text" 
+                  class="fancy-input" 
+                  placeholder="Buscar empresa por nombre o CIF..."
+                  [ngModel]="empresaSearchTerm()"
+                  (ngModelChange)="empresaSearchTerm.set($event); showCompanyDropdown.set(true)"
+                  name="empresaSearch"
+                  autocomplete="off">
+              </div>
+              
+              <div class="autocomplete-dropdown" *ngIf="showCompanyDropdown() && filteredEmpresas().length > 0">
+                <div class="autocomplete-item" *ngFor="let e of filteredEmpresas()" (click)="selectEmpresa(e)">
+                  <img [src]="e.logo || 'assets/default-company.png'" class="mini-logo">
+                  <div class="item-info">
+                    <span class="item-name">{{ e.nombreComercial }}</span>
+                    <span class="item-sub">{{ e.cif }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <ng-template #selectedTpl>
+              <div class="selected-company-card">
+                <img [src]="selectedEmpresa()?.logo || 'assets/default-company.png'" class="mini-logo">
+                <div class="item-info">
+                  <span class="item-name">{{ selectedEmpresa()?.nombreComercial }}</span>
+                  <span class="item-sub">{{ selectedEmpresa()?.cif }}</span>
+                </div>
+                <button type="button" class="clear-btn" (click)="clearEmpresa()" *ngIf="!editingId">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </ng-template>
+          </div>
+          <div class="form-group flex-1">
+            <label>Tipo</label>
+            <select name="tipoContrato" [(ngModel)]="formModel.tipoContrato" class="fancy-input">
+              <option value="BANNER">BANNER</option>
+              <option value="PUBLICACION">PUBLICACION</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row dates" id="row-dates">
+          <div class="form-group">
+            <label>Fecha inicio (opcional; vigencia tras pago si la dejas vacía)</label>
+            <input type="date" name="fechaInicio" [(ngModel)]="formModel.fechaInicio" class="fancy-input">
+          </div>
+          <div class="form-group">
+            <label>Fecha fin (opcional)</label>
+            <input type="date" name="fechaFin" [(ngModel)]="formModel.fechaFin" class="fancy-input">
+          </div>
+          <div class="form-group">
+            <label>Monto (€)</label>
+            <input type="number" name="monto" [(ngModel)]="formModel.monto" class="fancy-input" placeholder="0.00">
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="editingId">
+          <label>Estado (solo edición manual)</label>
+          <select name="estado" [(ngModel)]="formModel.estado" class="fancy-input">
+            <option *ngFor="let e of estadosEdicion" [value]="e">{{ labelEstado(e) }}</option>
+          </select>
+          <p class="field-hint">Usa esto solo para correcciones puntuales. El flujo normal lo marca la empresa y Stripe.</p>
+        </div>
+
+        <div class="form-group">
+          <label>Descripción / Notas Internas</label>
+          <textarea name="descripcion" [(ngModel)]="formModel.descripcion" class="fancy-input" rows="3" placeholder="Detalles del contrato..."></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>Texto del banner (visible si tipo BANNER y contrato activo)</label>
+            <input type="text" name="textoBanner" [(ngModel)]="formModel.textoBanner" class="fancy-input" placeholder="Ej. Descubre la nueva colección" />
+          </div>
+          <div class="form-group flex-1">
+            <label>URL al hacer clic</label>
+            <input type="text" name="urlClick" [(ngModel)]="formModel.urlClick" class="fancy-input" placeholder="https://..." />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>ID producto a destacar (solo tipo PUBLICACION, opcional)</label>
+          <input type="number" name="productoId" [(ngModel)]="formModel.productoId" class="fancy-input" placeholder="ID en Nexus" />
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+      <button class="btn-primary" (click)="saveContrato()" [disabled]="!isFormValid() || loading()">
+        <i class="fa-solid fa-check"></i> {{ editingId ? 'Guardar cambios' : 'Enviar propuesta' }}
+      </button>
+    </div>
+  </div>
+</div>

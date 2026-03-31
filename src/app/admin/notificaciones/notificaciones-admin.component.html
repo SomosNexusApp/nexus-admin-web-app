@@ -1,0 +1,86 @@
+<div class="notif-page">
+  <header class="notif-head">
+    <h1>Notificaciones in-app</h1>
+    <p class="lead">
+      Envía avisos al centro de notificaciones de la app. Usa plantillas como punto de partida y personaliza el mensaje antes de realizar el envío global o segmentado.
+    </p>
+  </header>
+
+  <section class="panel">
+    <h2><i class="fas fa-layer-group"></i> Plantillas rápidas</h2>
+    @if (loadingPlantillas()) {
+      <div class="sca-loading"><div class="spinner-sm"></div></div>
+    } @else {
+      <div class="plantillas-grid">
+        @for (p of plantillas(); track p.id) {
+          <button type="button" class="plantilla-card" (click)="aplicarPlantilla(p)">
+            <span class="pid"># {{ p.id }}</span>
+            <span class="phelp">{{ p.ayuda }}</span>
+          </button>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="panel form-panel">
+    <h2><i class="fas fa-paper-plane"></i> Redactar envío</h2>
+    
+    <div class="field-row">
+      <div class="field-group">
+        <label>Título de la notificación</label>
+        <input class="inp" [ngModel]="titulo()" (ngModelChange)="titulo.set($event)" name="titulo" placeholder="ej. ¡Nueva actualización!") />
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Mensaje detallado</label>
+      <textarea class="inp ta" rows="4" [ngModel]="mensaje()" (ngModelChange)="mensaje.set($event)" name="mensaje" placeholder="Escribe aquí el contenido de la notificación..."></textarea>
+    </div>
+
+    <div class="field-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div class="field-group">
+        <label>URL de destino</label>
+        <input class="inp" [ngModel]="url()" (ngModelChange)="url.set($event)" name="url" placeholder="/perfil?tab=resumen" />
+      </div>
+      <div class="field-group">
+        <label>Tipo (TipoNotificacion)</label>
+        <input class="inp" [ngModel]="tipo()" (ngModelChange)="tipo.set($event)" name="tipo" placeholder="SISTEMA" />
+      </div>
+    </div>
+
+    <label class="chk">
+      <input type="checkbox" [ngModel]="broadcastTodos()" (ngModelChange)="broadcastTodos.set($event)" name="bc" />
+      <span>Enviar a todos los usuarios (Broadcast global)</span>
+    </label>
+
+    @if (!broadcastTodos()) {
+      <div class="field-group" style="animation: slideIn 0.3s ease-out;">
+        <label>IDs de destinatarios</label>
+        <input
+          class="inp"
+          [ngModel]="actorIdsText()"
+          (ngModelChange)="actorIdsText.set($event)"
+          name="ids"
+          placeholder="Separados por comas, ej: 1, 15, 23"
+        />
+      </div>
+    }
+
+    <div class="status-messages">
+      @if (resultado()) {
+        <p class="ok"><i class="fas fa-check-circle"></i> {{ resultado() }}</p>
+      }
+      @if (error()) {
+        <p class="err"><i class="fas fa-exclamation-triangle"></i> {{ error() }}</p>
+      }
+    </div>
+
+    <button type="button" class="btn-primary" [disabled]="enviando()" (click)="enviar()">
+      @if (enviando()) {
+        <i class="fas fa-spinner fa-spin"></i> Procesando envío...
+      } @else {
+        <i class="fas fa-rocket"></i> Enviar notificaciones
+      }
+    </button>
+  </section>
+</div>

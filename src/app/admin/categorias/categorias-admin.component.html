@@ -98,7 +98,7 @@
       <div class="form-group">
         <label>Slug (URL)</label>
         <div class="slug-input-wrap">
-          <span class="slug-prefix">nexsus.com/cat/</span>
+          <span class="slug-prefix">nexus.com/cat/</span>
           <input type="text" [(ngModel)]="catForm.slug" (ngModelChange)="checkSlug()" [disabled]="!isNew && selectedCat()?.slug !== ''" class="fancy-input slug-field">
         </div>
         @if (slugExists()) {

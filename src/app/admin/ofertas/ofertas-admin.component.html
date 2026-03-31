@@ -48,8 +48,14 @@
             <tr class="clickable-row" (click)="openPanel(o)">
               <td>
                 <div class="offer-cell">
-                  <div class="offer-icon" [class.is-flash]="o.esFlash">
-                    <i [class]="o.esFlash ? 'fa-solid fa-bolt' : 'fa-solid fa-tag'"></i>
+                  <div class="offer-image-container">
+                    @if (o.imagenPrincipal) {
+                      <img [src]="o.imagenPrincipal" class="offer-thumb" alt="">
+                    } @else {
+                      <div class="offer-icon" [class.is-flash]="o.esFlash">
+                        <i [class]="o.esFlash ? 'fa-solid fa-bolt' : 'fa-solid fa-tag'"></i>
+                      </div>
+                    }
                   </div>
                   <div class="offer-meta">
                     <span class="offer-title">{{ o.titulo }}</span>
@@ -76,7 +82,7 @@
                 </button>
               </td>
               <td>
-                <button class="action-icon-btn"><i class="fa-solid fa-chevron-right"></i></button>
+                <div class="action-icon-btn"><i class="fa-solid fa-chevron-right"></i></div>
               </td>
             </tr>
           } @empty {
@@ -146,8 +152,8 @@
 
 <!-- MODAL RECHAZAR -->
 @if (showRechazarModal()) {
-  <div class="modal-overlay">
-    <div class="modal">
+  <div class="modal-overlay" (click)="showRechazarModal.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
       <h3>Rechazar Oferta</h3>
       <p class="modal-intro">Se enviará una notificación al usuario con el motivo del rechazo.</p>
       <textarea [(ngModel)]="motivoRechazo" placeholder="Ej: Precio incorrecto, contenido inapropiado..." rows="4" class="modal-textarea"></textarea>
@@ -161,12 +167,28 @@
 
 <!-- MODAL NUEVA FLASH -->
 @if (showFlashModal()) {
-  <div class="modal-overlay">
-    <div class="modal wide">
+  <div class="modal-overlay" (click)="showFlashModal.set(false)">
+    <div class="modal wide" (click)="$event.stopPropagation()">
       <h3><i class="fa-solid fa-bolt"></i> Crear Oferta Flash</h3>
       <div class="flash-form-grid">
-        <div class="modal-field full"><label>Título</label><input type="text" [(ngModel)]="flashForm.titulo" class="search-input"></div>
-        <div class="modal-field full"><label>Descripción</label><textarea [(ngModel)]="flashForm.descripcion" rows="3" class="modal-textarea"></textarea></div>
+        <div class="modal-field full"><label>Título</label><input type="text" [(ngModel)]="flashForm.titulo" class="search-input" placeholder="Ej: PlayStation 5 Slim con 2 mandos"></div>
+        <div class="modal-field full"><label>Descripción</label><textarea [(ngModel)]="flashForm.descripcion" rows="2" class="modal-textarea" placeholder="Detalles de la oferta..."></textarea></div>
+        
+        <div class="modal-field full"><label>Imagen Principal (URL)</label><input type="text" [(ngModel)]="flashForm.imagenPrincipal" class="search-input" placeholder="https://..."></div>
+        
+        <div class="modal-field"><label>Tienda / Marca</label><input type="text" [(ngModel)]="flashForm.tienda" class="search-input" placeholder="Amazon, MediaMarkt..."></div>
+        <div class="modal-field">
+          <label>Categoría</label>
+          <select [(ngModel)]="flashForm.categoriaId" class="search-input">
+            <option [ngValue]="null">Seleccionar...</option>
+            @for (cat of categorias(); track cat.id) {
+              <option [value]="cat.id">{{ cat.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="modal-field full"><label>URL de la Oferta</label><input type="text" [(ngModel)]="flashForm.urlOferta" class="search-input" placeholder="https://..."></div>
+
         <div class="modal-field"><label>Precio Flash (€)</label><input type="number" [(ngModel)]="flashForm.precioEspecial" class="price-input full-w"></div>
         <div class="modal-field"><label>Precio Original (€)</label><input type="number" [(ngModel)]="flashForm.precioOriginal" class="price-input full-w"></div>
         <div class="modal-field"><label>Fecha Fin</label><input type="datetime-local" [(ngModel)]="flashForm.flashFin" class="search-input"></div>
