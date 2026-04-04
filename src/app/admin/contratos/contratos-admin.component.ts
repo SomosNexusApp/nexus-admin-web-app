@@ -18,8 +18,10 @@ export class ContratosAdminComponent implements OnInit {
   contratos = signal<AdminContrato[]>([]);
   empresas = signal<AdminEmpresa[]>([]);
   loading = signal(false);
+  loadingEmpresas = signal(false);
+  empresasError = signal(false);
   searchTerm = signal('');
-  
+
   // Autocomplete
   empresaSearchTerm = signal('');
   showCompanyDropdown = signal(false);
@@ -42,12 +44,16 @@ export class ContratosAdminComponent implements OnInit {
   };
 
   filteredEmpresas = computed(() => {
-    const term = this.empresaSearchTerm().toLowerCase();
-    if (!term) return [];
-    return this.empresas().filter(e => 
-      e.nombreComercial.toLowerCase().includes(term) || 
+    const term = this.empresaSearchTerm().toLowerCase().trim();
+    const all = this.empresas();
+    // Si no hay término de búsqueda, mostrar todas (máx 20)
+    if (!term) {
+      return all.slice(0, 20);
+    }
+    return all.filter(e =>
+      e.nombreComercial.toLowerCase().includes(term) ||
       e.cif.toLowerCase().includes(term)
-    );
+    ).slice(0, 20);
   });
 
   // Stats
@@ -87,7 +93,7 @@ export class ContratosAdminComponent implements OnInit {
 
   filteredContratos = computed(() => {
     const term = this.searchTerm().toLowerCase();
-    return this.contratos().filter(c => 
+    return this.contratos().filter(c =>
       c.empresa.nombreComercial.toLowerCase().includes(term) ||
       c.empresa.cif.toLowerCase().includes(term)
     );
@@ -106,25 +112,46 @@ export class ContratosAdminComponent implements OnInit {
   }
 
   loadEmpresas() {
-    this.adminService.getEmpresas().subscribe(res => {
-      const mapped: AdminEmpresa[] = res.map(e => ({
-        id: e.id,
-        nombreComercial: e.nombreComercial,
-        cif: e.cif,
-        logo: e.logo
-      }));
-      this.empresas.set(mapped);
-    });
+    this.loadingEmpresas.set(true);
+    this.empresasError.set(false);
+    this.adminService.getEmpresas()
+      .pipe(finalize(() => this.loadingEmpresas.set(false)))
+      .subscribe({
+        next: (res) => {
+          const mapped: AdminEmpresa[] = res.map((e: any) => ({
+            id: e.id,
+            nombreComercial: e.nombreComercial || e.user || 'Empresa sin nombre',
+            cif: e.cif || '',
+            logo: e.logo
+          }));
+          this.empresas.set(mapped);
+        },
+        error: () => {
+          this.empresasError.set(true);
+          console.error('[ContratosAdmin] No se pudieron cargar las empresas');
+        }
+      });
   }
 
   onSearch(event: any) {
     this.searchTerm.set(event.target.value);
   }
 
+  onEmpresaInputFocus() {
+    // Al hacer foco, mostrar el dropdown inmediatamente con todas las empresas
+    this.showCompanyDropdown.set(true);
+  }
+
+  onEmpresaInputBlur() {
+    // Retardo para permitir que el click en el ítem se procese antes de ocultar
+    setTimeout(() => this.showCompanyDropdown.set(false), 200);
+  }
+
   openCreateModal() {
     this.editingId = null;
     this.selectedEmpresa.set(null);
     this.empresaSearchTerm.set('');
+    this.showCompanyDropdown.set(false);
     this.formModel = {
       empresaId: null,
       tipoContrato: 'BANNER',
@@ -143,6 +170,8 @@ export class ContratosAdminComponent implements OnInit {
   openEditModal(c: AdminContrato) {
     this.editingId = c.id;
     this.selectedEmpresa.set(c.empresa);
+    this.empresaSearchTerm.set('');
+    this.showCompanyDropdown.set(false);
     this.formModel = {
       empresaId: c.empresa.id,
       tipoContrato: c.tipoContrato,
@@ -168,6 +197,7 @@ export class ContratosAdminComponent implements OnInit {
   clearEmpresa() {
     this.selectedEmpresa.set(null);
     this.formModel.empresaId = null;
+    this.empresaSearchTerm.set('');
   }
 
   closeModal() {

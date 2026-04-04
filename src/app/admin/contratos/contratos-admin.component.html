@@ -3,8 +3,9 @@
     <div class="header-left">
       <h1 class="page-title"><i class="fa-solid fa-file-signature"></i> Contratos de Publicidad</h1>
       <p class="page-subtitle">
-        Cada alta envía una <strong>propuesta</strong> a la empresa (notificación in-app). La empresa acepta y paga con
-        Stripe; al activarse, el banner o la publicación patrocinada quedan visibles según el tipo.
+        Gestiona las campañas publicitarias de las empresas asociadas a Nexus.
+        Cada propuesta notifica a la empresa por <strong>email + in-app</strong>. Cuando acepta y paga (Stripe),
+        el banner o la publicación patrocinada se activan automáticamente.
       </p>
     </div>
     <div class="header-actions">
@@ -67,7 +68,7 @@
           <tr *ngFor="let c of filteredContratos()">
             <td>
               <div class="company-cell">
-                <img [src]="c.empresa.logo || 'assets/default-company.png'" class="company-logo">
+                <img [src]="c.empresa.logo || 'assets/default-company.png'" class="company-logo" (error)="$any($event.target).src='assets/default-company.png'">
                 <div class="company-info">
                   <span class="company-name">{{ c.empresa.nombreComercial }}</span>
                   <span class="company-cif">{{ c.empresa.cif }}</span>
@@ -113,122 +114,271 @@
   </div>
 </div>
 
-<!-- Modal Create/Edit -->
+<!-- ═══════════════════ MODAL CREATE/EDIT ═══════════════════ -->
 <div class="modal-overlay" *ngIf="showModal" (click)="handleOverlayClick($event)">
-  <div class="modal elite-modal" (click)="$event.stopPropagation()">
+  <div class="elite-modal" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
     <div class="modal-header">
-      <h3 class="modal-title">
-        <i class="fa-solid" [class.fa-plus]="!editingId" [class.fa-pen]="editingId"></i>
-        {{ editingId ? 'Editar contrato' : 'Nueva propuesta de publicidad' }}
-      </h3>
-      <button class="close-btn" (click)="closeModal()">&times;</button>
+      <div class="modal-header-left">
+        <div class="modal-header-icon">
+          <i class="fa-solid" [class.fa-bullhorn]="!editingId" [class.fa-pen-to-square]="editingId"></i>
+        </div>
+        <div>
+          <h3 class="modal-title">{{ editingId ? 'Editar contrato' : 'Nueva propuesta de publicidad' }}</h3>
+          <p class="modal-subtitle">
+            {{ editingId
+              ? 'Modifica los datos del contrato. El estado se puede ajustar manualmente.'
+              : 'La empresa recibirá una notificación in-app y un email con el presupuesto.' }}
+          </p>
+        </div>
+      </div>
+      <button class="close-btn" (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
     <div class="modal-body">
+
+      <!-- Info Notice (solo creación) -->
+      <div class="modal-notice" *ngIf="!editingId">
+        <i class="fa-solid fa-circle-info"></i>
+        <span>El contrato se creará en estado <strong>Propuesta enviada</strong>. La empresa acepta y paga con Stripe; al completarse el pago, se activa automáticamente.</span>
+      </div>
+
       <form #contractForm="ngForm">
-        <p *ngIf="!editingId" class="modal-hint">
-          Se enviará al estado <strong>Propuesta enviada</strong> y la empresa recibirá una notificación con el
-          presupuesto. No hace falta elegir «Activo» aquí: eso ocurre tras el pago en Stripe.
-        </p>
-        <div class="form-row">
-          <div class="form-group flex-2">
-            <label>Empresa</label>
-            <div class="autocomplete-container" *ngIf="!selectedEmpresa(); else selectedTpl">
-              <div class="search-input-wrapper">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input 
-                  type="text" 
-                  class="fancy-input" 
-                  placeholder="Buscar empresa por nombre o CIF..."
-                  [ngModel]="empresaSearchTerm()"
-                  (ngModelChange)="empresaSearchTerm.set($event); showCompanyDropdown.set(true)"
+
+        <!-- ── SECCIÓN 1: EMPRESA + TIPO ── -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fa-solid fa-building"></i> Empresa cliente
+          </div>
+
+          <!-- Empresa selector -->
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Empresa destinataria <span class="req">*</span></label>
+
+            <!-- Estado: sin empresa seleccionada → mostrar buscador -->
+            <ng-container *ngIf="!selectedEmpresa()">
+              <div class="empresa-search-box">
+                <i class="fa-solid fa-magnifying-glass empresa-search-icon"></i>
+                <input
+                  #empresaInput
+                  type="text"
+                  class="empresa-input"
+                  [placeholder]="loadingEmpresas() ? 'Cargando empresas...' : empresasError() ? 'Error al cargar. Recarga la página.' : 'Busca por nombre o CIF...'"
+                  [value]="empresaSearchTerm()"
+                  (input)="empresaSearchTerm.set($any($event.target).value); showCompanyDropdown.set(true)"
+                  (focus)="onEmpresaInputFocus()"
+                  (blur)="onEmpresaInputBlur()"
                   name="empresaSearch"
-                  autocomplete="off">
+                  autocomplete="off"
+                  [disabled]="loadingEmpresas()">
+                <span class="empresa-count" *ngIf="!loadingEmpresas() && !empresasError()">
+                  {{ empresas().length }} empresa(s)
+                </span>
               </div>
-              
-              <div class="autocomplete-dropdown" *ngIf="showCompanyDropdown() && filteredEmpresas().length > 0">
-                <div class="autocomplete-item" *ngFor="let e of filteredEmpresas()" (click)="selectEmpresa(e)">
-                  <img [src]="e.logo || 'assets/default-company.png'" class="mini-logo">
-                  <div class="item-info">
-                    <span class="item-name">{{ e.nombreComercial }}</span>
-                    <span class="item-sub">{{ e.cif }}</span>
+
+              <!-- Dropdown list -->
+              <div class="empresa-dropdown" *ngIf="showCompanyDropdown() && filteredEmpresas().length > 0">
+                <div class="empresa-dropdown-inner">
+                  <div
+                    class="empresa-option"
+                    *ngFor="let e of filteredEmpresas()"
+                    (mousedown)="selectEmpresa(e)">
+                    <div class="empresa-option-avatar">
+                      <img
+                        [src]="e.logo || ''"
+                        (error)="$any($event.target).style.display='none'"
+                        style="width:100%;height:100%;object-fit:cover;border-radius:8px;">
+                      <span class="empresa-option-initial" *ngIf="!e.logo">
+                        {{ e.nombreComercial.charAt(0).toUpperCase() }}
+                      </span>
+                    </div>
+                    <div class="empresa-option-info">
+                      <span class="empresa-option-name">{{ e.nombreComercial }}</span>
+                      <span class="empresa-option-cif">CIF: {{ e.cif }}</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right empresa-option-arrow"></i>
                   </div>
                 </div>
               </div>
-            </div>
-            
-            <ng-template #selectedTpl>
-              <div class="selected-company-card">
-                <img [src]="selectedEmpresa()?.logo || 'assets/default-company.png'" class="mini-logo">
-                <div class="item-info">
-                  <span class="item-name">{{ selectedEmpresa()?.nombreComercial }}</span>
-                  <span class="item-sub">{{ selectedEmpresa()?.cif }}</span>
+
+              <div class="empresa-dropdown" *ngIf="showCompanyDropdown() && filteredEmpresas().length === 0 && !loadingEmpresas()">
+                <div class="empresa-empty">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <span>{{ empresaSearchTerm() ? 'Sin resultados para "' + empresaSearchTerm() + '"' : 'No hay empresas registradas' }}</span>
                 </div>
-                <button type="button" class="clear-btn" (click)="clearEmpresa()" *ngIf="!editingId">
-                  <i class="fa-solid fa-xmark"></i>
-                </button>
               </div>
-            </ng-template>
-          </div>
-          <div class="form-group flex-1">
-            <label>Tipo</label>
-            <select name="tipoContrato" [(ngModel)]="formModel.tipoContrato" class="fancy-input">
-              <option value="BANNER">BANNER</option>
-              <option value="PUBLICACION">PUBLICACION</option>
-            </select>
+            </ng-container>
+
+            <!-- Estado: empresa seleccionada → mostrar card -->
+            <div class="empresa-selected-card" *ngIf="selectedEmpresa()">
+              <div class="empresa-selected-avatar">
+                <img
+                  [src]="selectedEmpresa()?.logo || ''"
+                  (error)="$any($event.target).style.display='none'"
+                  style="width:100%;height:100%;object-fit:cover;border-radius:12px;">
+                <span class="empresa-option-initial large" *ngIf="!selectedEmpresa()?.logo">
+                  {{ selectedEmpresa()?.nombreComercial?.charAt(0)?.toUpperCase() }}
+                </span>
+              </div>
+              <div class="empresa-selected-info">
+                <span class="empresa-selected-name">{{ selectedEmpresa()?.nombreComercial }}</span>
+                <span class="empresa-selected-cif">CIF: {{ selectedEmpresa()?.cif }}</span>
+              </div>
+              <button type="button" class="empresa-clear-btn" (click)="clearEmpresa()" *ngIf="!editingId" title="Cambiar empresa">
+                <i class="fa-solid fa-rotate-left"></i> Cambiar
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="form-row dates" id="row-dates">
+        <!-- ── SECCIÓN 2: TIPO Y PRESUPUESTO ── -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fa-solid fa-chart-pie"></i> Tipo y presupuesto
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Tipo de campaña <span class="req">*</span></label>
+              <div class="tipo-selector">
+                <label class="tipo-option" [class.selected]="formModel.tipoContrato === 'BANNER'">
+                  <input type="radio" name="tipoContrato" [(ngModel)]="formModel.tipoContrato" value="BANNER">
+                  <i class="fa-solid fa-rectangle-ad"></i>
+                  <span>Banner publicitario</span>
+                </label>
+                <label class="tipo-option" [class.selected]="formModel.tipoContrato === 'PUBLICACION'">
+                  <input type="radio" name="tipoContrato" [(ngModel)]="formModel.tipoContrato" value="PUBLICACION">
+                  <i class="fa-solid fa-star"></i>
+                  <span>Producto patrocinado</span>
+                </label>
+              </div>
+              <p class="form-hint">
+                <ng-container *ngIf="formModel.tipoContrato === 'BANNER'">
+                  ⚡ El banner aparece en páginas estratégicas de Nexus según la URL de clic configurada.
+                </ng-container>
+                <ng-container *ngIf="formModel.tipoContrato === 'PUBLICACION'">
+                  ⭐ El producto aparece en las primeras posiciones con el badge &quot;Patrocinado&quot;.
+                </ng-container>
+              </p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Presupuesto (€) <span class="req">*</span></label>
+              <div class="monto-input-wrap">
+                <span class="monto-prefix">€</span>
+                <input
+                  type="number"
+                  name="monto"
+                  [(ngModel)]="formModel.monto"
+                  class="fancy-input monto-input"
+                  placeholder="0.00"
+                  min="1"
+                  step="10">
+              </div>
+              <p class="form-hint">Importe que la empresa pagará con Stripe para activar la campaña.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SECCIÓN 3: VIGENCIA ── -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fa-solid fa-calendar-days"></i> Vigencia de la campaña
+          </div>
+          <div class="form-row-3">
+            <div class="form-group">
+              <label class="form-label">Fecha de inicio</label>
+              <input type="date" name="fechaInicio" [(ngModel)]="formModel.fechaInicio" class="fancy-input">
+              <p class="form-hint">Opcional. Si vacío, arranca al confirmar el pago.</p>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fecha de fin</label>
+              <input type="date" name="fechaFin" [(ngModel)]="formModel.fechaFin" class="fancy-input">
+              <p class="form-hint">Opcional. Por defecto 30 días desde el pago.</p>
+            </div>
+            <div class="form-group" *ngIf="editingId">
+              <label class="form-label">Estado del contrato</label>
+              <select name="estado" [(ngModel)]="formModel.estado" class="fancy-input">
+                <option *ngFor="let e of estadosEdicion" [value]="e">{{ labelEstado(e) }}</option>
+              </select>
+              <p class="form-hint">Solo para correcciones. El flujo normal lo gestiona Stripe.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SECCIÓN 4: DESCRIPCIÓN ── -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fa-solid fa-align-left"></i> Descripción y notas
+          </div>
           <div class="form-group">
-            <label>Fecha inicio (opcional; vigencia tras pago si la dejas vacía)</label>
-            <input type="date" name="fechaInicio" [(ngModel)]="formModel.fechaInicio" class="fancy-input">
+            <label class="form-label">Descripción / Notas internas</label>
+            <textarea
+              name="descripcion"
+              [(ngModel)]="formModel.descripcion"
+              class="fancy-input"
+              rows="3"
+              placeholder="Ej: Campaña de primavera para su línea de calzado — 30 días en portada y sección Ofertas."></textarea>
+            <p class="form-hint">Este texto aparecerá en el email y en la página de contratos de la empresa.</p>
+          </div>
+        </div>
+
+        <!-- ── SECCIÓN 5: CONFIGURACIÓN BANNER (solo si BANNER) ── -->
+        <div class="form-section" *ngIf="formModel.tipoContrato === 'BANNER'">
+          <div class="form-section-title">
+            <i class="fa-solid fa-rectangle-ad"></i> Configuración del banner
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Texto del banner</label>
+              <input type="text" name="textoBanner" [(ngModel)]="formModel.textoBanner" class="fancy-input" placeholder="Ej. Descubre la nueva colección primavera 2026" />
+              <p class="form-hint">Texto visible en el banner dentro del marketplace.</p>
+            </div>
+            <div class="form-group">
+              <label class="form-label">URL de destino al hacer clic</label>
+              <input type="text" name="urlClick" [(ngModel)]="formModel.urlClick" class="fancy-input" placeholder="https://..." />
+              <p class="form-hint">URL a donde redirige al usuario al hacer clic en el banner.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SECCIÓN 6: PRODUCTO PATROCINADO (solo si PUBLICACION) ── -->
+        <div class="form-section" *ngIf="formModel.tipoContrato === 'PUBLICACION'">
+          <div class="form-section-title">
+            <i class="fa-solid fa-star"></i> Producto a patrocinar
           </div>
           <div class="form-group">
-            <label>Fecha fin (opcional)</label>
-            <input type="date" name="fechaFin" [(ngModel)]="formModel.fechaFin" class="fancy-input">
-          </div>
-          <div class="form-group">
-            <label>Monto (€)</label>
-            <input type="number" name="monto" [(ngModel)]="formModel.monto" class="fancy-input" placeholder="0.00">
+            <label class="form-label">ID del producto en Nexus</label>
+            <input type="number" name="productoId" [(ngModel)]="formModel.productoId" class="fancy-input" placeholder="Introduce el ID numérico del producto..." />
+            <p class="form-hint">
+              El producto recibirá el badge <strong>Patrocinado</strong> y aparecerá en las primeras posiciones del marketplace al activarse el contrato.
+              Puedes obtener el ID desde la sección <em>Productos</em> de este panel.
+            </p>
           </div>
         </div>
 
-        <div class="form-group" *ngIf="editingId">
-          <label>Estado (solo edición manual)</label>
-          <select name="estado" [(ngModel)]="formModel.estado" class="fancy-input">
-            <option *ngFor="let e of estadosEdicion" [value]="e">{{ labelEstado(e) }}</option>
-          </select>
-          <p class="field-hint">Usa esto solo para correcciones puntuales. El flujo normal lo marca la empresa y Stripe.</p>
-        </div>
-
-        <div class="form-group">
-          <label>Descripción / Notas Internas</label>
-          <textarea name="descripcion" [(ngModel)]="formModel.descripcion" class="fancy-input" rows="3" placeholder="Detalles del contrato..."></textarea>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group flex-1">
-            <label>Texto del banner (visible si tipo BANNER y contrato activo)</label>
-            <input type="text" name="textoBanner" [(ngModel)]="formModel.textoBanner" class="fancy-input" placeholder="Ej. Descubre la nueva colección" />
-          </div>
-          <div class="form-group flex-1">
-            <label>URL al hacer clic</label>
-            <input type="text" name="urlClick" [(ngModel)]="formModel.urlClick" class="fancy-input" placeholder="https://..." />
-          </div>
-        </div>
-        <div class="form-group">
-          <label>ID producto a destacar (solo tipo PUBLICACION, opcional)</label>
-          <input type="number" name="productoId" [(ngModel)]="formModel.productoId" class="fancy-input" placeholder="ID en Nexus" />
-        </div>
       </form>
     </div>
 
+    <!-- Footer -->
     <div class="modal-footer">
-      <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
-      <button class="btn-primary" (click)="saveContrato()" [disabled]="!isFormValid() || loading()">
-        <i class="fa-solid fa-check"></i> {{ editingId ? 'Guardar cambios' : 'Enviar propuesta' }}
-      </button>
+      <div class="footer-summary" *ngIf="selectedEmpresa() && formModel.monto > 0">
+        <i class="fa-solid fa-receipt"></i>
+        <span>
+          Propuesta para <strong>{{ selectedEmpresa()?.nombreComercial }}</strong> —
+          <strong>{{ formModel.monto | currency:'EUR' }}</strong> —
+          Tipo: <strong>{{ formModel.tipoContrato }}</strong>
+        </span>
+      </div>
+      <div class="footer-actions">
+        <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button class="btn-primary" (click)="saveContrato()" [disabled]="!isFormValid() || loading()">
+          <span *ngIf="loading()" class="btn-spinner"></span>
+          <i class="fa-solid fa-paper-plane" *ngIf="!loading() && !editingId"></i>
+          <i class="fa-solid fa-check" *ngIf="!loading() && editingId"></i>
+          {{ editingId ? 'Guardar cambios' : 'Enviar propuesta' }}
+        </button>
+      </div>
     </div>
   </div>
 </div>

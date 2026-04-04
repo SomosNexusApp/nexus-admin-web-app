@@ -168,7 +168,8 @@ export class AdminService {
 
   // ── Empresas ─────────────────────────────────────────────────────────────
   getEmpresas(): Observable<any[]> {
-    return this.http.get<any[]>(`${environment.apiUrl}/api/empresa`);
+    // Usamos el endpoint DTO dedicado para evitar serialización circular JPA
+    return this.http.get<any[]>(`${this.base}/contratos/empresas-lista`);
   }
 
   // ── Configuración ────────────────────────────────────────────────────────

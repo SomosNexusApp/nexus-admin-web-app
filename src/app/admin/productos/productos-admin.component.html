@@ -62,6 +62,7 @@
             <th>Estado</th>
             <th>Fecha</th>
             <th class="text-center">Destacado</th>
+            <th class="text-center">Patrocinado</th>
             <th></th>
           </tr>
         </thead>
@@ -95,6 +96,13 @@
                   <i class="fa-solid fa-shield-heart star-active"></i>
                 } @else {
                   <i class="fa-regular fa-shield star-dim"></i>
+                }
+              </td>
+              <td class="text-center">
+                @if ($any(p).patrocinado) {
+                  <span class="sponsored-pill"><i class="fa-solid fa-bolt"></i> Sí</span>
+                } @else {
+                  <span class="no-sponsored">—</span>
                 }
               </td>
               <td (click)="$event.stopPropagation()">
@@ -204,6 +212,11 @@
             <i class="fa-solid" [class.fa-star]="!selectedProduct()!.destacado" [class.fa-star-slash]="selectedProduct()!.destacado"></i> 
             {{ selectedProduct()!.destacado ? 'Quitar Vital' : 'Marcar Vital' }}
           </button>
+
+          <!-- BOTÓN PUBLICITAR -->
+          <button class="action-btn action-publicitar" (click)="openPublicitarModal(selectedProduct()!)" title="Crear contrato de publicidad patrocinada para este producto">
+            <i class="fa-solid fa-bolt"></i> Publicitar
+          </button>
           
           @if (selectedProduct()!.estado !== 'SUSPENDIDO_ADMIN' && selectedProduct()!.estado !== 'ELIMINADO') {
             <button class="action-btn action-warn" (click)="showPausarModal.set(true)">
@@ -270,6 +283,77 @@
         <button class="btn-modal-cancel" (click)="showEliminarModal.set(false)">Retornar</button>
         <button class="btn-modal-confirm danger" [disabled]="!motivoAccion" (click)="doEliminar()">
           <i class="fa-solid fa-trash-can"></i> Confirmar Destrucción
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL PUBLICITAR: crear contrato PUBLICACION patrocinada -->
+@if (showPublicitarModal()) {
+  <div class="modal-overlay" (click)="showPublicitarModal.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3><i class="fa-solid fa-bolt" style="color: #a78bfa"></i> Crear campaña patrocinada</h3>
+      <p class="modal-intro">
+        Crea una propuesta de contrato tipo <strong>Producto Patrocinado</strong> para 
+        <strong>{{ publicitar_producto?.titulo }}</strong>.
+        La empresa recibirá notificación in-app y email. Cuando acepte y pague, el producto aparecerá 
+        como <em>Patrocinado</em> en el marketplace.
+      </p>
+
+      <div class="modal-field">
+        <label>Empresa destinataria *</label>
+        <div class="pub-empresa-selector">
+          @if (!publicitar_empresa) {
+            <div class="pub-empresa-search">
+              <input 
+                type="text" 
+                [(ngModel)]="publicitar_busqueda"
+                (input)="filtrarEmpresasPublicitar()"
+                placeholder="Buscar empresa por nombre o CIF..."
+                class="modal-input"
+                autocomplete="off">
+              @if (publicitar_lista.length > 0) {
+                <div class="pub-dropdown">
+                  @for (e of publicitar_lista; track e.id) {
+                    <div class="pub-dropdown-item" (click)="seleccionarEmpresaPublicitar(e)">
+                      <strong>{{ e.nombreComercial }}</strong>
+                      <span>{{ e.cif }}</span>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="pub-selected">
+              <span><i class="fa-solid fa-building"></i> {{ publicitar_empresa.nombreComercial }}</span>
+              <button type="button" class="pub-clear-btn" (click)="publicitar_empresa = null; publicitar_busqueda = ''">×</button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="modal-field">
+        <label>Presupuesto (€) *</label>
+        <input type="number" [(ngModel)]="publicitar_monto" min="1" step="10" placeholder="ej: 299" class="modal-input">
+      </div>
+
+      <div class="modal-field">
+        <label>Descripción de la campaña (opcional)</label>
+        <textarea [(ngModel)]="publicitar_desc" rows="3" placeholder="ej: producto patrocinado en portada durante 30 días..." class="modal-textarea"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" (click)="showPublicitarModal.set(false)">Cancelar</button>
+        <button 
+          class="btn-modal-confirm success" 
+          [disabled]="!publicitar_empresa || !publicitar_monto || publicitar_monto <= 0 || loadingPublicitar()"
+          (click)="doPublicitar()">
+          @if (loadingPublicitar()) {
+            <i class="fa-solid fa-spinner fa-spin"></i> Enviando...
+          } @else {
+            <i class="fa-solid fa-paper-plane"></i> Enviar propuesta
+          }
         </button>
       </div>
     </div>

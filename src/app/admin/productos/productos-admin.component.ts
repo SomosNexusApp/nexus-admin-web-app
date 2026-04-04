@@ -5,8 +5,10 @@ import { RouterModule } from '@angular/router';
 import { debounceTime, Subject } from 'rxjs';
 import { AdminProductosService } from '../services/admin-productos.service';
 import { AdminCategoriasService } from '../services/admin-categorias.service';
-import { AdminProducto, AdminCategoria, PagedResult } from '../admin.models';
+import { AdminService } from '../admin.service';
+import { AdminProducto, AdminCategoria, AdminEmpresa, PagedResult } from '../admin.models';
 import { environment } from '../../../environments/enviroment';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-productos-admin',
@@ -18,6 +20,8 @@ import { environment } from '../../../environments/enviroment';
 export class ProductosAdminComponent implements OnInit {
   private productoSvc = inject(AdminProductosService);
   private categoriaSvc = inject(AdminCategoriasService);
+  private adminSvc = inject(AdminService);
+  private toast = inject(ToastService);
 
   // Data signals
   result = signal<PagedResult<AdminProducto> | null>(null);
@@ -38,11 +42,24 @@ export class ProductosAdminComponent implements OnInit {
   };
   page = 0;
 
-  // Modals
+  // Modals existentes
   showPausarModal = signal(false);
   showEliminarModal = signal(false);
   motivoAccion = '';
   duracionPausa = 24;
+
+  // ── Modal Publicitar ───────────────────────────────────────────────────────
+  showPublicitarModal = signal(false);
+  loadingPublicitar = signal(false);
+  publicitar_producto: AdminProducto | null = null;
+  publicitar_empresa: AdminEmpresa | null = null;
+  publicitar_busqueda = '';
+  publicitar_monto = 299;
+  publicitar_desc = '';
+  publicitar_lista: AdminEmpresa[] = [];
+
+  /** Todas las empresas cargadas una sola vez */
+  private _empresas: AdminEmpresa[] = [];
 
   private search$ = new Subject<void>();
 
@@ -51,6 +68,17 @@ export class ProductosAdminComponent implements OnInit {
     this.search$.pipe(debounceTime(400)).subscribe(() => {
       this.page = 0;
       this.loadProductos();
+    });
+    // Precargar lista de empresas para el modal "Publicitar"
+    this.adminSvc.getEmpresas().subscribe({
+      next: (res: any[]) => {
+        this._empresas = res.map((e: any) => ({
+          id: e.id,
+          nombreComercial: e.nombreComercial || e.user || 'Empresa',
+          cif: e.cif || '',
+          logo: e.logo
+        }));
+      }
     });
   }
 
@@ -89,10 +117,9 @@ export class ProductosAdminComponent implements OnInit {
 
   toggleDestacado(id: number): void {
     this.productoSvc.toggleDestacado(id).subscribe(p => {
-      // Update local state if needed or reload
       this.loadProductos();
       const current = this.selectedProduct();
-      if(current && current.id === id) this.selectedProduct.set(p);
+      if (current && current.id === id) this.selectedProduct.set(p);
     });
   }
 
@@ -161,5 +188,64 @@ export class ProductosAdminComponent implements OnInit {
     if (estado === 'PAUSADO' || estado === 'SUSPENDIDO_ADMIN') return 'badge-orange';
     if (estado === 'ELIMINADO') return 'badge-red';
     return '';
+  }
+
+  // ── Publicitar ─────────────────────────────────────────────────────────────
+
+  openPublicitarModal(p: AdminProducto): void {
+    this.publicitar_producto = p;
+    this.publicitar_empresa = null;
+    this.publicitar_busqueda = '';
+    this.publicitar_monto = 299;
+    this.publicitar_desc = `Producto patrocinado: ${p.titulo}. Destacado en portada durante 30 días.`;
+    this.publicitar_lista = this._empresas.slice(0, 10);
+    this.showPublicitarModal.set(true);
+  }
+
+  filtrarEmpresasPublicitar(): void {
+    const term = this.publicitar_busqueda.toLowerCase().trim();
+    if (!term) {
+      this.publicitar_lista = this._empresas.slice(0, 10);
+    } else {
+      this.publicitar_lista = this._empresas
+        .filter(e =>
+          e.nombreComercial.toLowerCase().includes(term) ||
+          e.cif.toLowerCase().includes(term)
+        )
+        .slice(0, 10);
+    }
+  }
+
+  seleccionarEmpresaPublicitar(e: AdminEmpresa): void {
+    this.publicitar_empresa = e;
+    this.publicitar_lista = [];
+    this.publicitar_busqueda = '';
+  }
+
+  doPublicitar(): void {
+    if (!this.publicitar_empresa || !this.publicitar_producto || !this.publicitar_monto) return;
+    this.loadingPublicitar.set(true);
+
+    const payload: any = {
+      tipoContrato: 'PUBLICACION',
+      monto: this.publicitar_monto,
+      descripcion: this.publicitar_desc,
+      productoId: this.publicitar_producto.id,
+    };
+
+    this.adminSvc.createContrato(this.publicitar_empresa.id, payload).subscribe({
+      next: () => {
+        this.loadingPublicitar.set(false);
+        this.showPublicitarModal.set(false);
+        this.toast.success(`Propuesta enviada a ${this.publicitar_empresa!.nombreComercial}. Recibirán notificación y email.`);
+        this.publicitar_empresa = null;
+        this.publicitar_producto = null;
+        this.loadProductos();
+      },
+      error: (err: any) => {
+        this.loadingPublicitar.set(false);
+        this.toast.error(err?.error?.error || 'Error al crear la propuesta. Inténtalo de nuevo.');
+      }
+    });
   }
 }
