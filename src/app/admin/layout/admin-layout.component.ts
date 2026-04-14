@@ -5,7 +5,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/rou
 import { CommonModule } from '@angular/common';
 import { AuthStore } from '../../core/auth/auth-store';
 import { AdminService } from '../admin.service';
-import { environment } from '../../../environments/enviroment';
+import { environment } from '../../../environments/environment';
 import { AdminHealth } from '../admin.models';
 import { interval, Subscription } from 'rxjs';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';

@@ -8,7 +8,7 @@ import { debounceTime, Subject } from 'rxjs';
 import { AdminService } from '../admin.service';
 import { AdminUsuario, PagedResult } from '../admin.models';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
-import { environment } from '../../../environments/enviroment';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-usuarios-admin',

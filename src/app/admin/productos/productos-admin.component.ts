@@ -7,7 +7,7 @@ import { AdminProductosService } from '../services/admin-productos.service';
 import { AdminCategoriasService } from '../services/admin-categorias.service';
 import { AdminService } from '../admin.service';
 import { AdminProducto, AdminCategoria, AdminEmpresa, PagedResult } from '../admin.models';
-import { environment } from '../../../environments/enviroment';
+import { environment } from '../../../environments/environment';
 import { ToastService } from '../../core/services/toast.service';
 
 @Component({

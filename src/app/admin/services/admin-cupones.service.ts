@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/enviroment';
+import { environment } from '../../../environments/environment';
 import { AdminCupon, CuponUso, CuponStats, PagedResult } from '../admin.models';
 
 @Injectable({

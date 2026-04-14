@@ -2,7 +2,7 @@ import { Component, OnDestroy, inject, signal, ChangeDetectorRef } from '@angula
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/enviroment';
+import { environment } from '../../../environments/environment';
 import { interval, Subscription } from 'rxjs';
 import { AdminService } from '../admin.service';
 

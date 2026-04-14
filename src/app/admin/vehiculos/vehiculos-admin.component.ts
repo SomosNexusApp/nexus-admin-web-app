@@ -5,7 +5,7 @@ import { RouterModule } from '@angular/router';
 import { debounceTime, Subject } from 'rxjs';
 import { AdminVehiculosService } from '../services/admin-vehiculos.service';
 import { AdminVehiculo, PagedResult } from '../admin.models';
-import { environment } from '../../../environments/enviroment';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-vehiculos-admin',

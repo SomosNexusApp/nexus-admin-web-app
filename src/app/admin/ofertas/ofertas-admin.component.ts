@@ -5,7 +5,7 @@ import { RouterModule } from '@angular/router';
 import { AdminOfertasService } from '../services/admin-ofertas.service';
 import { AdminCategoriasService } from '../services/admin-categorias.service';
 import { AdminOferta, PagedResult, AdminCategoria } from '../admin.models';
-import { environment } from '../../../environments/enviroment';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-ofertas-admin',

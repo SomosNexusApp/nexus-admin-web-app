@@ -5,7 +5,7 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { AdminService } from '../admin.service';
 import { AdminCompra, PagedResult } from '../admin.models';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
-import { environment } from '../../../environments/enviroment';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-compras-admin',

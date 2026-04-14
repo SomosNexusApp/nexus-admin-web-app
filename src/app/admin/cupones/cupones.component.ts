@@ -1,4 +1,4 @@
-Ôªøimport { Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -9,12 +9,12 @@ import { CommonModule } from '@angular/common';
     <div class="admin-page">
       <div class="page-header">
         <h1 class="page-title"><i class="fa-solid fa-ticket"></i> Cupones</h1>
-        <p class="page-subtitle">M√≥dulo en desarrollo</p>
+        <p class="page-subtitle">MÛdulo en desarrollo</p>
       </div>
       <div class="coming-soon">
         <i class="fa-solid fa-ticket"></i>
-        <h2>Pr√≥ximamente</h2>
-        <p>Este m√≥dulo estar√° disponible en la pr√≥xima versi√≥n.</p>
+        <h2>PrÛximamente</h2>
+        <p>Este mÛdulo estar· disponible en la prÛxima versiÛn.</p>
       </div>
     </div>
   `,
