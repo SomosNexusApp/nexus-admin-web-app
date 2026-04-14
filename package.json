@@ -42,9 +42,9 @@
   },
   "overrides": {
     "ng-recaptcha": {
-      "@angular/core": "$@angular/core",
-      "@angular/common": "$@angular/common",
-      "@angular/forms": "$@angular/forms"
+      "@angular/core": "^21.0.0",
+      "@angular/common": "^21.0.0",
+      "@angular/forms": "^21.0.0"
     }
   },
   "devDependencies": {
