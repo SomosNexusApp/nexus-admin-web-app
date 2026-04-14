@@ -17,10 +17,11 @@
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
-      "architect": {
+      "targets": {
         "build": {
           "builder": "@angular/build:application",
           "options": {
+            "outputPath": "dist/frontend-admin",
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
@@ -35,6 +36,7 @@
             ]
           },
           "configurations": {
+            "production": {
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
