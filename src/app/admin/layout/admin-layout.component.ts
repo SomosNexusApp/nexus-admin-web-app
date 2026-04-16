@@ -9,6 +9,7 @@ import { environment } from '../../../environments/environment';
 import { AdminHealth } from '../admin.models';
 import { interval, Subscription } from 'rxjs';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
+import { ToastContainerComponent } from '../../shared/components/toast-container/toast-container.component';
 
 interface NavItem {
   label: string;
@@ -25,7 +26,7 @@ interface NavGroup {
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, AvatarComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, AvatarComponent, ToastContainerComponent],
   templateUrl: './admin-layout.component.html',
   styleUrls: ['./admin-layout.component.css'],
 })

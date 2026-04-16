@@ -9,6 +9,7 @@ import { AdminService } from '../admin.service';
 import { AdminUsuario, PagedResult } from '../admin.models';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
 import { environment } from '../../../environments/environment';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-usuarios-admin',
@@ -19,6 +20,7 @@ import { environment } from '../../../environments/environment';
 })
 export class UsuariosAdminComponent implements OnInit {
   private svc = inject(AdminService);
+  private toast = inject(ToastService);
 
   result = signal<PagedResult<AdminUsuario> | null>(null);
   loading = signal(true);
@@ -87,7 +89,10 @@ export class UsuariosAdminComponent implements OnInit {
   verificar(): void {
     const u = this.selectedUser();
     if (!u) return;
-    this.svc.verificarUsuario(u.id).subscribe(() => this.loadUsuarios());
+    this.svc.verificarUsuario(u.id).subscribe(() => {
+      this.toast.success(`El usuario @${u.user} ha sido verificado correctamente.`, 'Usuario Verificado');
+      this.loadUsuarios();
+    });
   }
 
   doSuspender(): void {
