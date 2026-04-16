@@ -32,6 +32,7 @@
         <option value="VENDIDO">🔵 Vendido</option>
         <option value="SUSPENDIDO_ADMIN">🟠 Suspendido (Admin)</option>
         <option value="PAUSADO">⚪ Pausado (User)</option>
+        <option value="EXPIRADO">⏳ Caducado</option>
         <option value="ELIMINADO">🔴 Eliminado</option>
       </select>
     </div>
@@ -176,11 +177,18 @@
           <span class="info-label">Estado Actual</span>
           <div>
             <span class="status-badge" [ngClass]="estadoClass(selectedProduct()!.estado)">{{ estadoLabel(selectedProduct()!.estado) }}</span>
+            @if (selectedProduct()!.estado === 'EXPIRADO') {
+              <div class="cleanup-hint">
+                <i class="fa-solid fa-clock-rotate-left"></i> Eliminación definitiva en: <strong>{{ selectedProduct()!.diasRestantesExpirado ?? 'pocos' }} días</strong>
+              </div>
+            }
           </div>
         </div>
         <div class="info-item">
           <span class="info-label">Propietario / Vendedor</span>
-          <span class="seller-name"><i class="fa-solid fa-circle-user"></i> {{ selectedProduct()!.vendedor.user }}</span>
+          <span class="seller-name view-link" (click)="viewUser(selectedProduct()!.vendedor.user)" style="cursor: pointer;">
+            <i class="fa-solid fa-circle-user"></i> @{{ selectedProduct()!.vendedor.user }} <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </span>
         </div>
         <div class="info-item">
           <span class="info-label">Segmento / Categoría</span>

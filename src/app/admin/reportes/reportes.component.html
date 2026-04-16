@@ -99,9 +99,9 @@
         </div>
         <div class="report-meta-item">
           <span class="meta-label">Reportado por</span>
-          <div class="user-cell small">
+          <div class="user-cell small" (click)="viewInApp('user', selectedReporte()!.reportador.user); $event.stopPropagation()" style="cursor: pointer;">
             <app-avatar [avatarUrl]="selectedReporte()!.reportador.avatar" [username]="selectedReporte()!.reportador.user" [size]="24"></app-avatar>
-            <span>&#64;{{ selectedReporte()!.reportador.user }}</span>
+            <span class="view-link">&#64;{{ selectedReporte()!.reportador.user }} <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
           </div>
         </div>
       </div>
@@ -118,17 +118,23 @@
       <div class="content-block">
         <span class="meta-label">Contenido denunciado</span>
         @if (selectedReporte()!.productoDenunciado) {
-          <div class="content-preview product-preview">
+          <div class="content-preview product-preview clickable" (click)="viewInApp('producto', selectedReporte()!.productoDenunciado!.id)">
             @if (selectedReporte()!.productoDenunciado!.imagenPrincipal) {
               <img [src]="selectedReporte()!.productoDenunciado!.imagenPrincipal" alt="Producto" class="content-thumb"/>
             }
-            <span class="content-label">{{ selectedReporte()!.productoDenunciado!.titulo }}</span>
+            <div class="content-text-group">
+              <span class="content-label">{{ selectedReporte()!.productoDenunciado!.titulo }}</span>
+              <span class="view-tag">Ver en Nexus <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+            </div>
           </div>
         }
         @if (selectedReporte()!.actorDenunciado) {
-          <div class="content-preview user-preview">
+          <div class="content-preview user-preview clickable" (click)="viewInApp('user', selectedReporte()!.actorDenunciado!.user)">
             <app-avatar [avatarUrl]="selectedReporte()!.actorDenunciado!.avatar" [username]="selectedReporte()!.actorDenunciado!.user" [size]="40"></app-avatar>
-            <span class="content-label">&#64;{{ selectedReporte()!.actorDenunciado!.user }}</span>
+            <div class="content-text-group">
+              <span class="content-label">&#64;{{ selectedReporte()!.actorDenunciado!.user }}</span>
+              <span class="view-tag">Ver perfil <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+            </div>
           </div>
         }
         @if (selectedReporte()!.comentarioDenunciado) {
@@ -137,8 +143,19 @@
           </div>
         }
         @if (selectedReporte()!.ofertaDenunciada) {
-          <div class="content-preview">
-            <span class="content-label">{{ selectedReporte()!.ofertaDenunciada!.titulo }}</span>
+          <div class="content-preview clickable" (click)="viewInApp('oferta', selectedReporte()!.ofertaDenunciada!.id)">
+             <div class="content-text-group">
+              <span class="content-label">{{ selectedReporte()!.ofertaDenunciada!.titulo }}</span>
+              <span class="view-tag">Ver en Nexus <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+            </div>
+          </div>
+        }
+        @if (selectedReporte()!.vehiculoDenunciado) {
+           <div class="content-preview clickable" (click)="viewInApp('vehiculo', selectedReporte()!.vehiculoDenunciado!.id)">
+             <div class="content-text-group">
+              <span class="content-label">{{ selectedReporte()!.vehiculoDenunciado!.titulo }}</span>
+              <span class="view-tag">Ver en Nexus <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+            </div>
           </div>
         }
       </div>

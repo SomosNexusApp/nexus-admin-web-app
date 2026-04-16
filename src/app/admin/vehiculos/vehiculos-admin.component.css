@@ -89,3 +89,10 @@
 .btn-modal-confirm.warn { background: #f59e0b; }
 .btn-modal-confirm.danger { background: #ef4444; }
 .btn-modal-confirm:disabled { opacity: 0.4; }
+
+/* ── Integration Links ── */
+.view-link { color: var(--accent); font-weight: 700; display: inline-flex; align-items: center; gap: 4px; transition: var(--transition); }
+.view-link:hover { text-decoration: underline; filter: brightness(1.2); }
+
+.cleanup-hint { background: rgba(236, 72, 153, 0.1); color: #ec4899; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; margin-top: 8px; border-left: 3px solid #ec4899; display: flex; align-items: center; gap: 8px; }
+.badge-pink { background: #fdf2f8; color: #ec4899; border: 1px solid #f9a8d4; }

@@ -25,6 +25,7 @@
       <option value="DISPONIBLE">En venta</option>
       <option value="VENDIDO">Vendido</option>
       <option value="PAUSADO">Pausado Admin</option>
+      <option value="EXPIRADO">⏳ Caducado</option>
     </select>
 
     <div class="tech-filters">
@@ -114,13 +115,26 @@
         <div class="info-item"><span class="info-label">Kilómetros</span><span>{{ selectedVehiculo()!.kilometros | number }} km</span></div>
         <div class="info-item"><span class="info-label">Combustible</span><span>{{ selectedVehiculo()!.combustible }}</span></div>
         <div class="info-item"><span class="info-label">Precio</span><span class="info-value-strong">{{ selectedVehiculo()!.precio | currency:'EUR' }}</span></div>
-        <div class="info-item full"><span class="info-label">Publicado por</span><span>{{ selectedVehiculo()!.publicador.user }}</span></div>
+        <div class="info-item" *ngIf="selectedVehiculo()!.estadoVehiculo === 'EXPIRADO'">
+          <span class="info-label">Estado</span>
+          <div class="cleanup-hint">
+            <i class="fa-solid fa-clock-rotate-left"></i> Eliminación definitiva en: <strong>{{ selectedVehiculo()!.diasRestantesExpirado ?? 'pocos' }} días</strong>
+          </div>
+        </div>
+        <div class="info-item full">
+          <span class="info-label">Publicado por</span>
+          <span class="view-link" (click)="viewUser(selectedVehiculo()!.publicador.user)" style="cursor: pointer;">
+            <i class="fa-solid fa-user"></i> @{{ selectedVehiculo()!.publicador.user }} <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </span>
+        </div>
       </div>
 
       <div class="actions-section">
-         <h3 class="actions-title">Acciones de Admin</h3>
+         <h3 class="actions-title">Panel de Control</h3>
          <div class="actions-grid">
-           <button class="action-btn" (click)="openVehiculoUrl(selectedVehiculo()!.id)"><i class="fa-solid fa-eye"></i> Ver</button>
+           <button class="action-btn" (click)="openVehiculoUrl(selectedVehiculo()!.id)">
+             <i class="fa-solid fa-arrow-up-right-from-square"></i> Ver en Nexus
+           </button>
            @if (selectedVehiculo()!.estadoVehiculo !== 'PAUSADO') {
              <button class="action-btn action-warn" (click)="showPausarModal.set(true)"><i class="fa-solid fa-pause"></i> Pausar</button>
            } @else {

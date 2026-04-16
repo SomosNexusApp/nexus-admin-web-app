@@ -135,6 +135,14 @@ export class OfertasAdminComponent implements OnInit {
     };
   }
 
+  openOfferUrl(id: number): void {
+    window.open(`${environment.appUrl}/ofertas/${id}`, '_blank');
+  }
+
+  viewUser(username: string): void {
+    window.open(`${environment.appUrl}/perfil/${username}`, '_blank');
+  }
+
   prevPage(): void { if (this.page > 0) { this.page--; this.loadOfertas(); } }
   nextPage(): void {
     const r = this.result();

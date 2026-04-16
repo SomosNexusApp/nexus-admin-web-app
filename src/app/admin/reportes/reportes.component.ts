@@ -5,6 +5,7 @@ import { RouterModule, ActivatedRoute } from '@angular/router';
 import { AdminService } from '../admin.service';
 import { AdminReporte, PagedResult } from '../admin.models';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-reportes',
@@ -144,6 +145,16 @@ export class ReportesComponent implements OnInit {
       this.loadReportes();
       this.closePanel();
     });
+  }
+  
+  viewInApp(type: 'user' | 'producto' | 'oferta' | 'vehiculo', id: string | number): void {
+    let path = '';
+    if (type === 'user') path = `/perfil/${id}`;
+    else if (type === 'producto') path = `/productos/${id}`;
+    else if (type === 'oferta') path = `/ofertas/${id}`;
+    else if (type === 'vehiculo') path = `/vehiculos/${id}`;
+    
+    window.open(`${environment.appUrl}${path}`, '_blank');
   }
 
   prevPage(): void { if (this.page > 0) { this.page--; this.loadReportes(); } }

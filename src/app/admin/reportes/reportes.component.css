@@ -102,3 +102,11 @@
 .btn-modal-confirm:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-modal-confirm.warn { background: var(--warning); }
 .btn-modal-confirm.danger { background: var(--danger); }
+
+/* ── Integration Links ── */
+.view-link { color: var(--accent-2); font-weight: 700; display: inline-flex; align-items: center; gap: 4px; transition: var(--transition); }
+.view-link:hover { text-decoration: underline; filter: brightness(1.2); }
+.view-tag { font-size: 0.7rem; color: var(--accent-2); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.clickable { cursor: pointer; transition: var(--transition); }
+.clickable:hover { background: rgba(255,255,255,0.06); border-color: var(--accent-2); }
+.content-text-group { display: flex; flex-direction: column; gap: 2px; }

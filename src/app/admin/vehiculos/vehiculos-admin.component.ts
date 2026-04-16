@@ -27,7 +27,7 @@ export class VehiculosAdminComponent implements OnInit {
   filtros = {
     q: '',
     tipo: '',
-    estado: 'DISPONIBLE',
+    estado: '',
     precioMin: null as number | null,
     precioMax: null as number | null,
     anioMin: null as number | null,
@@ -78,6 +78,10 @@ export class VehiculosAdminComponent implements OnInit {
     window.open(`${environment.appUrl}/vehiculos/${id}`, '_blank');
   }
 
+  viewUser(username: string): void {
+    window.open(`${environment.appUrl}/perfil/${username}`, '_blank');
+  }
+
   doPausar(): void {
     const v = this.selectedVehiculo();
     if (!v || !this.motivoAccion) return;
@@ -120,6 +124,7 @@ export class VehiculosAdminComponent implements OnInit {
       'DISPONIBLE': 'En venta',
       'VENDIDO': 'Vendido',
       'PAUSADO': 'Pausado Admin',
+      'EXPIRADO': 'Caducado',
       'ELIMINADO': 'Eliminado'
     };
     return labels[estado] || estado;
@@ -129,6 +134,7 @@ export class VehiculosAdminComponent implements OnInit {
     if (estado === 'DISPONIBLE') return 'badge-green';
     if (estado === 'VENDIDO') return 'badge-gray';
     if (estado === 'PAUSADO') return 'badge-orange';
+    if (estado === 'EXPIRADO') return 'badge-pink';
     if (estado === 'ELIMINADO') return 'badge-red';
     return '';
   }

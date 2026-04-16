@@ -117,7 +117,12 @@
         <div class="info-item"><span class="info-label">Precio Oferta</span><span class="info-value-strong">{{ selectedOferta()!.precioOferta | currency:'EUR' }}</span></div>
         <div class="info-item"><span class="info-label">Precio Original</span><span class="price-old big">{{ selectedOferta()!.precioOriginal | currency:'EUR' }}</span></div>
         <div class="info-item"><span class="info-label">Votos</span><span>{{ selectedOferta()!.votos || 0 }}°</span></div>
-        <div class="info-item"><span class="info-label">Usuario</span><span>{{ selectedOferta()!.actor.user }}</span></div>
+        <div class="info-item">
+          <span class="info-label">Usuario / Publicador</span>
+          <span class="view-link" (click)="viewUser(selectedOferta()!.actor.user)" style="cursor: pointer;">
+            <i class="fa-solid fa-user"></i> @{{ selectedOferta()!.actor.user }} <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </span>
+        </div>
         @if (selectedOferta()!.esFlash) {
           <div class="info-item full flash-info">
              <i class="fa-solid fa-bolt"></i> Oferta Flash activa hasta {{ selectedOferta()!.flashFin | date:'short' }}
@@ -126,8 +131,12 @@
       </div>
 
       <div class="actions-section">
-        <h3 class="actions-title">Moderación</h3>
+        <h3 class="actions-title">Control Administrativo</h3>
         <div class="actions-grid">
+          <button class="action-btn" (click)="openOfferUrl(selectedOferta()!.id)">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Ver en Nexus
+          </button>
+          
           @if (selectedOferta()!.estado === 'PENDIENTE_REVISION') {
             <button class="action-btn action-success" (click)="aprobar(selectedOferta()!.id)">
               <i class="fa-solid fa-check"></i> Aprobar Oferta

@@ -62,6 +62,7 @@ export interface AdminReporte {
   reportador: { id: number; user: string; avatar?: string };
   actorDenunciado?: { id: number; user: string; avatar?: string };
   productoDenunciado?: { id: number; titulo: string; imagenPrincipal?: string };
+  vehiculoDenunciado?: { id: number; titulo: string };
   ofertaDenunciada?: { id: number; titulo: string };
   comentarioDenunciado?: { id: number; contenido: string };
   resolucion?: string;
@@ -163,6 +164,7 @@ export interface AdminProducto {
   categoria?: { id: number; nombre: string; slug: string };
   imagenPrincipal?: string;
   nReportes?: number;
+  diasRestantesExpirado?: number;
 }
 
 export interface AdminOferta {
@@ -200,6 +202,7 @@ export interface AdminVehiculo {
   fechaPublicacion: string;
   imagenPrincipal?: string;
   publicador: { id: number; user: string };
+  diasRestantesExpirado?: number;
 }
 
 export interface AdminCategoria {

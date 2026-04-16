@@ -115,6 +115,10 @@ export class ProductosAdminComponent implements OnInit {
     window.open(`${environment.appUrl}/productos/${id}`, '_blank');
   }
 
+  viewUser(username: string): void {
+    window.open(`${environment.appUrl}/perfil/${username}`, '_blank');
+  }
+
   toggleDestacado(id: number): void {
     this.productoSvc.toggleDestacado(id).subscribe(p => {
       this.loadProductos();
@@ -175,6 +179,7 @@ export class ProductosAdminComponent implements OnInit {
       'RESERVADO': 'Reservado',
       'VENDIDO': 'Vendido',
       'PAUSADO': 'Pausado',
+      'EXPIRADO': 'Caducado',
       'ELIMINADO': 'Eliminado',
       'SUSPENDIDO_ADMIN': 'Suspendido'
     };
@@ -186,6 +191,7 @@ export class ProductosAdminComponent implements OnInit {
     if (estado === 'RESERVADO') return 'badge-blue';
     if (estado === 'VENDIDO') return 'badge-gray';
     if (estado === 'PAUSADO' || estado === 'SUSPENDIDO_ADMIN') return 'badge-orange';
+    if (estado === 'EXPIRADO') return 'badge-pink';
     if (estado === 'ELIMINADO') return 'badge-red';
     return '';
   }
