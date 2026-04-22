@@ -107,7 +107,7 @@ export class GoogleAuthService {
     this.ngZone.run(() => {
       this.authService.googleLogin(response.credential).subscribe({
         next: (res) => {
-          if (res.esNuevoUsuario) {
+          if (res.usuario && res.usuario.onboardingCompletado === false) {
             this.guestPopup.showOAuthTermsPopup();
           } else {
             this.guestPopup.closePopup();
@@ -127,7 +127,7 @@ export class GoogleAuthService {
     this.ngZone.run(() => {
       this.authService.googleLogin(response.credential).subscribe({
         next: (res) => {
-          if (res.esNuevoUsuario) {
+          if (res.usuario && res.usuario.onboardingCompletado === false) {
             this.guestPopup.showOAuthTermsPopup();
           } else {
             this.guestPopup.closePopup();

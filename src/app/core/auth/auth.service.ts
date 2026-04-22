@@ -11,6 +11,9 @@ import { GuestPopupService } from '../services/guest-popup.service';
 import { AuthResponse, RegisterRequest, LoginRequest } from '../../models/auth.model';
 import { Usuario } from '../../models/usuario.model';
 
+// servicio de autenticacion de la zona de administracion
+// es basicamente el mismo que el de nexus-web-app pero adaptado para la admin app
+// el parametro isAdmin=true hace que use el token de admin en lugar del de usuario
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
@@ -19,13 +22,12 @@ export class AuthService {
   private router = inject(Router);
   private guestPopup = inject(GuestPopupService);
 
-  // NOTA: Base URL dinámica dependiente de si el endpoint es /auth o /api/auth
-  // Corregir la definición de las URLs en AuthService
+  // el backend acepta las dos rutas (/auth y /api/auth), las dos van al mismo controlador
   private readonly AUTH_URL = `${environment.apiUrl}/auth`;
   private readonly API_AUTH_URL = `${environment.apiUrl}/api/auth`;
 
   /**
-   * LOGIN
+   * LOGIN de admin: manda credenciales y si hay 2FA lo devuelve para que el componente lo gestione
    */
   login(credenciales: LoginRequest & { captchaToken?: string }, isAdmin = false): Observable<AuthResponse> {
     const payload = {

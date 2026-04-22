@@ -81,7 +81,7 @@ export class FacebookAuthService {
             if (response?.authResponse?.accessToken) {
               this.authService.facebookLogin(response.authResponse.accessToken).subscribe({
                 next: (res) => {
-                  if (res.esNuevoUsuario) {
+                  if (res.usuario && res.usuario.onboardingCompletado === false) {
                     this.guestPopup.showOAuthTermsPopup();
                   } else {
                     this.guestPopup.closePopup();
