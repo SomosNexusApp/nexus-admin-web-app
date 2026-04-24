@@ -89,7 +89,7 @@ export const ADMIN_ROUTES: Routes = [
       {
         path: 'contratos',
         loadComponent: () =>
-          import('./contratos/contratos-admin.component').then(m => m.ContratosAdminComponent),
+          import('./contratos/contratos-admin.component').then((m) => m.ContratosAdminComponent),
       },
       {
         path: 'configuracion',

@@ -33,5 +33,6 @@ export interface Usuario extends Actor {
   mostrarTelefono: boolean;
   mostrarUbicacion: boolean;
   direccionPorDefecto?: DireccionEnvio;
+  onboardingCompletado: boolean;
 }
 
