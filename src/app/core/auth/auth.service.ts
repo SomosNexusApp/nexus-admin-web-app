@@ -29,7 +29,10 @@ export class AuthService {
   /**
    * LOGIN de admin: manda credenciales y si hay 2FA lo devuelve para que el componente lo gestione
    */
-  login(credenciales: LoginRequest & { captchaToken?: string }, isAdmin = false): Observable<AuthResponse> {
+  login(
+    credenciales: LoginRequest & { captchaToken?: string },
+    isAdmin = false,
+  ): Observable<AuthResponse> {
     const payload = {
       user: credenciales.email || credenciales.username,
       password: credenciales.password,
@@ -117,16 +120,13 @@ export class AuthService {
       .pipe(switchMap((response) => this.procesarLoginExitoso(response)));
   }
 
-  facebookLogin(accessToken: string): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${this.AUTH_URL}/facebook`, { token: accessToken })
-      .pipe(switchMap((response) => this.procesarLoginExitoso(response)));
-  }
-
   /**
    * RECUPERACIÓN DE CONTRASEÑA
    */
-  requestPasswordReset(email: string, captchaToken: string = 'token-omitido-en-dev'): Observable<void> {
+  requestPasswordReset(
+    email: string,
+    captchaToken: string = 'token-omitido-en-dev',
+  ): Observable<void> {
     return this.http.post<void>(`${this.AUTH_URL}/forgot-password`, { email, captchaToken });
   }
 
@@ -164,7 +164,7 @@ export class AuthService {
       map((usuario) => {
         this.guestPopup.closePopup();
         return { ...response, usuario };
-      })
+      }),
     );
   }
 
@@ -173,9 +173,7 @@ export class AuthService {
    */
   procesarTokenSuccess(token: string): Observable<Usuario> {
     this.jwt.saveToken(token);
-    return this.loadCurrentUser().pipe(
-      tap(() => this.guestPopup.closePopup())
-    );
+    return this.loadCurrentUser().pipe(tap(() => this.guestPopup.closePopup()));
   }
 
   /**
@@ -187,9 +185,9 @@ export class AuthService {
       tap((response) => {
         this.jwt.saveToken(response.token, isAdmin);
       }),
-      switchMap((response) => this.loadCurrentUser(isAdmin).pipe(
-        map((usuario) => ({ ...response, usuario }))
-      ))
+      switchMap((response) =>
+        this.loadCurrentUser(isAdmin).pipe(map((usuario) => ({ ...response, usuario }))),
+      ),
     );
   }
 }

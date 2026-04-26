@@ -140,7 +140,6 @@ body {
   opacity: 1;
 }
 /* Ajuste para que tus botones manuales midan exactamente lo mismo que el de Google */
-.btn-facebook,
 .btn-oauth {
   width: 100%;
   height: 40px; /* Igualamos la altura exacta del botón "large" de Google */
