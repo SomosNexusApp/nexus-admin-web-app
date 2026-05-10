@@ -1,0 +1,149 @@
+<div class="patrocinios-admin-page">
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-icon"><i class="fas fa-star"></i></div>
+      <div>
+        <h1>Solicitudes de Patrocinio</h1>
+        <p>Revisa, aprueba y gestiona los patrocinios de usuarios y empresas</p>
+      </div>
+    </div>
+    <button class="btn-refresh" (click)="cargarPatrocinios()" [disabled]="cargando()">
+      <i class="fas fa-sync-alt" [class.fa-spin]="cargando()"></i> Actualizar
+    </button>
+  </div>
+
+  <!-- Filtros de estado -->
+  <div class="filtros-row">
+    @for (f of estadosFiltros; track f.value) {
+      <button class="filtro-btn" [class.active]="filtroEstado() === f.value"
+              (click)="filtroEstado.set(f.value)">
+        {{ f.label }}
+        <span class="filtro-count">{{ patrocinios().filter(p => f.value === 'TODOS' || p.estado === f.value).length }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- Lista de solicitudes -->
+  @if (cargando()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <span>Cargando solicitudes...</span>
+    </div>
+  } @else if (filtrados.length === 0) {
+    <div class="empty-state">
+      <i class="fas fa-inbox"></i>
+      <p>No hay solicitudes en este estado</p>
+    </div>
+  } @else {
+    <div class="solicitudes-grid">
+      @for (p of filtrados; track p.id) {
+        <div class="solicitud-card" [class]="'estado-' + p.estado.toLowerCase()">
+          <!-- Header -->
+          <div class="card-header">
+            <div class="item-preview">
+              @if (p.itemImagen) {
+                <img [src]="p.itemImagen" [alt]="p.itemTitulo" class="item-thumb" />
+              } @else {
+                <div class="item-thumb-placeholder"><i class="fas fa-image"></i></div>
+              }
+              <div class="item-info">
+                <span class="item-tipo">{{ p.tipoItem }}</span>
+                <strong class="item-titulo">{{ p.itemTitulo || 'Item #' + p.itemId }}</strong>
+                @if (p.actor) {
+                  <span class="item-actor">
+                    <i class="fas fa-user"></i> {{ p.actor.nombre || p.actor.user }}
+                  </span>
+                }
+              </div>
+            </div>
+            <span [class]="'estado-badge ' + getEstadoClass(p.estado)">{{ getEstadoLabel(p.estado) }}</span>
+          </div>
+
+          <!-- Detalles -->
+          <div class="card-details">
+            @if (p.diasPatrocinio) {
+              <div class="detail-item">
+                <i class="fas fa-clock"></i>
+                <span>Duración: <strong>{{ p.diasPatrocinio }} días</strong></span>
+              </div>
+            }
+            @if (p.monto) {
+              <div class="detail-item">
+                <i class="fas fa-euro-sign"></i>
+                <span>Precio: <strong>{{ p.monto | number:'1.2-2' }} €</strong></span>
+              </div>
+            }
+            <div class="detail-item">
+              <i class="fas fa-calendar"></i>
+              <span>Solicitado: <strong>{{ p.fecha | date:'dd/MM/yyyy HH:mm' }}</strong></span>
+            </div>
+            @if (p.descripcion) {
+              <div class="detail-item detail-desc">
+                <i class="fas fa-comment"></i>
+                <span>{{ p.descripcion }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Acciones según estado -->
+          <div class="card-actions">
+            @if (p.estado === 'SOLICITUD_USUARIO') {
+              <div class="aprobar-form">
+                <div class="monto-input-wrap">
+                  <label>Precio a cobrar (€)</label>
+                  <input type="number" min="0" step="0.01" [(ngModel)]="montoAprobacion[p.id]"
+                         placeholder="{{ p.monto ?? '9.99' }}" class="monto-input" />
+                </div>
+                <button class="btn-aprobar" (click)="aprobar(p.id)" [disabled]="aprobando() === p.id">
+                  @if (aprobando() === p.id) { <span class="spinner-sm"></span> }
+                  @else { <i class="fas fa-check"></i> }
+                  Aprobar
+                </button>
+                <button class="btn-cancelar" (click)="cancelar(p.id)" [disabled]="cancelando() === p.id">
+                  @if (cancelando() === p.id) { <span class="spinner-sm"></span> }
+                  @else { <i class="fas fa-times"></i> }
+                  Rechazar
+                </button>
+              </div>
+            }
+
+            @if (p.estado === 'ACTIVE') {
+              <button class="btn-desactivar" (click)="desactivarDirecto(p.tipoItem, p.itemId)">
+                <i class="fas fa-times-circle"></i> Quitar patrocinio
+              </button>
+            }
+
+            @if (p.estado === 'APROBADO_PENDIENTE_PAGO' || p.estado === 'PENDIENTE_PAGO') {
+              <div class="espera-pago">
+                <i class="fas fa-hourglass-half"></i>
+                Esperando pago del usuario...
+              </div>
+              <button class="btn-cancelar" (click)="cancelar(p.id)">
+                <i class="fas fa-times"></i> Cancelar
+              </button>
+            }
+          </div>
+
+          <!-- Acción directa (disponible siempre) -->
+          <details class="accion-directa">
+            <summary>Gestión directa de patrocinio</summary>
+            <div class="accion-directa-body">
+              <div class="direct-inputs">
+                <label>Días de patrocinio</label>
+                <input type="number" min="1" value="30" #diasInput class="dias-input" />
+              </div>
+              <div class="direct-btns">
+                <button class="btn-activar-directo" (click)="activarDirecto(p.tipoItem, p.itemId, +diasInput.value)">
+                  <i class="fas fa-rocket"></i> Activar patrocinio
+                </button>
+                <button class="btn-desactivar-directo" (click)="desactivarDirecto(p.tipoItem, p.itemId)">
+                  <i class="fas fa-ban"></i> Quitar patrocinio
+                </button>
+              </div>
+            </div>
+          </details>
+        </div>
+      }
+    </div>
+  }
+</div>

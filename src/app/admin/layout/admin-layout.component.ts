@@ -87,6 +87,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         { label: 'Notificaciones', icon: 'fa-bell', route: '/notificaciones' },
         { label: 'Newsletter', icon: 'fa-envelope', route: '/newsletter' },
         { label: 'Contratos', icon: 'fa-file-contract', route: '/contratos' },
+        { label: 'Patrocinios', icon: 'fa-star', route: '/patrocinios' },
       ],
     },
     {

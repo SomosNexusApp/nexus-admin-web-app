@@ -92,6 +92,11 @@ export const ADMIN_ROUTES: Routes = [
           import('./contratos/contratos-admin.component').then((m) => m.ContratosAdminComponent),
       },
       {
+        path: 'patrocinios',
+        loadComponent: () =>
+          import('./patrocinios/patrocinios-admin.component').then((m) => m.PatrociniosAdminComponent),
+      },
+      {
         path: 'configuracion',
         loadComponent: () =>
           import('./configuracion/configuracion-admin.component').then(m => m.ConfiguracionAdminComponent),
