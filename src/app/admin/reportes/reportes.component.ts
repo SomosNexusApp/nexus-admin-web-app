@@ -148,13 +148,24 @@ export class ReportesComponent implements OnInit {
   }
   
   viewInApp(type: 'user' | 'producto' | 'oferta' | 'vehiculo', id: string | number): void {
+    let baseUrl = environment.appUrl;
+    
+    // Autodetección de entorno: Si estamos en localhost pero la URL apunta a producción, corregimos.
+    // O si estamos en producción pero la URL apunta a localhost, también corregimos.
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocal && baseUrl.includes('nexus-app.es')) {
+      baseUrl = 'http://localhost:4200';
+    } else if (!isLocal && baseUrl.includes('localhost')) {
+      baseUrl = 'https://nexus-app.es';
+    }
+
     let path = '';
     if (type === 'user') path = `/perfil/${id}`;
     else if (type === 'producto') path = `/productos/${id}`;
     else if (type === 'oferta') path = `/ofertas/${id}`;
     else if (type === 'vehiculo') path = `/vehiculos/${id}`;
     
-    window.open(`${environment.appUrl}${path}`, '_blank');
+    window.open(`${baseUrl}${path}`, '_blank');
   }
 
   prevPage(): void { if (this.page > 0) { this.page--; this.loadReportes(); } }

@@ -48,7 +48,17 @@
                 {{ r.productoDenunciado?.titulo || r.actorDenunciado?.user || r.comentarioDenunciado?.contenido || r.ofertaDenunciada?.titulo || '—' }}
               </td>
               <td>
-                <button class="action-icon-btn"><i class="fa-solid fa-chevron-right"></i></button>
+                <div class="row-actions">
+                  @if (r.productoDenunciado || r.vehiculoDenunciado || r.ofertaDenunciada || r.actorDenunciado) {
+                    <button class="action-icon-btn link-btn" 
+                            (click)="viewInApp(r.productoDenunciado ? 'producto' : (r.vehiculoDenunciado ? 'vehiculo' : (r.ofertaDenunciada ? 'oferta' : 'user')), 
+                                      (r.productoDenunciado?.id || r.vehiculoDenunciado?.id || r.ofertaDenunciada?.id || r.actorDenunciado?.user || 0)); $event.stopPropagation()"
+                            title="Ver en Nexus">
+                      <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </button>
+                  }
+                  <button class="action-icon-btn"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
               </td>
             </tr>
           } @empty {
@@ -124,18 +134,24 @@
             }
             <div class="content-text-group">
               <span class="content-label">{{ selectedReporte()!.productoDenunciado!.titulo }}</span>
-              <span class="view-tag">Ver en Nexus <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+              <span class="view-tag">ID: #{{ selectedReporte()!.productoDenunciado!.id }}</span>
             </div>
           </div>
+          <button class="view-external-btn" (click)="viewInApp('producto', selectedReporte()!.productoDenunciado!.id)">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Ver producto en Nexus
+          </button>
         }
         @if (selectedReporte()!.actorDenunciado) {
           <div class="content-preview user-preview clickable" (click)="viewInApp('user', selectedReporte()!.actorDenunciado!.user)">
             <app-avatar [avatarUrl]="selectedReporte()!.actorDenunciado!.avatar" [username]="selectedReporte()!.actorDenunciado!.user" [size]="40"></app-avatar>
             <div class="content-text-group">
               <span class="content-label">&#64;{{ selectedReporte()!.actorDenunciado!.user }}</span>
-              <span class="view-tag">Ver perfil <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+              <span class="view-tag">Ver perfil del usuario</span>
             </div>
           </div>
+          <button class="view-external-btn" (click)="viewInApp('user', selectedReporte()!.actorDenunciado!.user)">
+            <i class="fa-solid fa-user"></i> Ver perfil completo
+          </button>
         }
         @if (selectedReporte()!.comentarioDenunciado) {
           <div class="content-preview comment-preview">
@@ -146,17 +162,23 @@
           <div class="content-preview clickable" (click)="viewInApp('oferta', selectedReporte()!.ofertaDenunciada!.id)">
              <div class="content-text-group">
               <span class="content-label">{{ selectedReporte()!.ofertaDenunciada!.titulo }}</span>
-              <span class="view-tag">Ver en Nexus <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+              <span class="view-tag">Oferta ID: #{{ selectedReporte()!.ofertaDenunciada!.id }}</span>
             </div>
           </div>
+          <button class="view-external-btn" (click)="viewInApp('oferta', selectedReporte()!.ofertaDenunciada!.id)">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Ver oferta en Nexus
+          </button>
         }
         @if (selectedReporte()!.vehiculoDenunciado) {
            <div class="content-preview clickable" (click)="viewInApp('vehiculo', selectedReporte()!.vehiculoDenunciado!.id)">
              <div class="content-text-group">
               <span class="content-label">{{ selectedReporte()!.vehiculoDenunciado!.titulo }}</span>
-              <span class="view-tag">Ver en Nexus <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+              <span class="view-tag">Vehículo ID: #{{ selectedReporte()!.vehiculoDenunciado!.id }}</span>
             </div>
           </div>
+          <button class="view-external-btn" (click)="viewInApp('vehiculo', selectedReporte()!.vehiculoDenunciado!.id)">
+            <i class="fa-solid fa-car"></i> Ver vehículo en Nexus
+          </button>
         }
       </div>
 

@@ -31,8 +31,11 @@
 .dim-cell { color: var(--text-dim); font-size: 0.8rem; white-space: nowrap; }
 .content-cell { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8rem; color: var(--text-dim); }
 .empty-row { text-align: center; color: var(--text-dim); padding: 40px 16px !important; }
+.row-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
 .action-icon-btn { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; transition: var(--transition); }
 .action-icon-btn:hover { color: #fff; background: rgba(255,255,255,0.06); }
+.action-icon-btn.link-btn { color: var(--accent-2); border-color: rgba(59, 130, 246, 0.2); }
+.action-icon-btn.link-btn:hover { background: rgba(59, 130, 246, 0.1); border-color: var(--accent-2); }
 .pagination { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 16px; border-top: 1px solid var(--border); font-size: 0.875rem; color: var(--text-dim); }
 .page-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition); }
 .page-btn:disabled { opacity: 0.3; cursor: default; }
@@ -110,3 +113,33 @@
 .clickable { cursor: pointer; transition: var(--transition); }
 .clickable:hover { background: rgba(255,255,255,0.06); border-color: var(--accent-2); }
 .content-text-group { display: flex; flex-direction: column; gap: 2px; }
+
+.view-external-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.05);
+  color: #60a5fa;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  transition: var(--transition);
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.view-external-btn:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #60a5fa;
+  transform: translateY(-2px);
+}
+
+.view-external-btn i {
+  font-size: 0.9rem;
+}
