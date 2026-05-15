@@ -188,7 +188,7 @@
         <div class="modal-field"><label>Tienda / Marca</label><input type="text" [(ngModel)]="flashForm.tienda" class="search-input" placeholder="Amazon, MediaMarkt..."></div>
         <div class="modal-field">
           <label>Categoría</label>
-          <select [(ngModel)]="flashForm.categoriaId" class="search-input">
+          <select [(ngModel)]="flashForm.categoriaId" class="modal-select">
             <option [ngValue]="null">Seleccionar...</option>
             @for (cat of categorias(); track cat.id) {
               <option [value]="cat.id">{{ cat.nombre }}</option>

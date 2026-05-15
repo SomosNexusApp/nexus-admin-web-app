@@ -25,15 +25,15 @@
       </div>
       <div class="settings-group">
         <label>Nombre del Sitio</label>
-        <input type="text" class="fancy-input" [(ngModel)]="config.siteName">
+        <input type="text" class="fancy-input" [(ngModel)]="config.siteName" />
       </div>
       <div class="settings-group">
         <label>Tagline / Descripción</label>
-        <input type="text" class="fancy-input" [(ngModel)]="config.siteTagline">
+        <input type="text" class="fancy-input" [(ngModel)]="config.siteTagline" />
       </div>
       <div class="settings-group">
         <label>Email de Soporte</label>
-        <input type="email" class="fancy-input" [(ngModel)]="config.contactEmail">
+        <input type="email" class="fancy-input" [(ngModel)]="config.contactEmail" />
       </div>
       <div class="switch-group">
         <div class="switch-info">
@@ -41,7 +41,7 @@
           <p>Bloquea el acceso a todos los usuarios excepto al staff</p>
         </div>
         <label class="nexus-switch">
-          <input type="checkbox" [(ngModel)]="config.maintenanceMode">
+          <input type="checkbox" [(ngModel)]="config.maintenanceMode" />
           <span class="slider"></span>
         </label>
       </div>
@@ -56,16 +56,16 @@
       <div class="form-row">
         <div class="settings-group">
           <label>Comisión Nexus (%)</label>
-          <input type="number" class="fancy-input" [(ngModel)]="config.commissionRate">
+          <input type="number" class="fancy-input" [(ngModel)]="config.commissionRate" />
         </div>
         <div class="settings-group">
           <label>Moneda</label>
-          <input type="text" class="fancy-input" [(ngModel)]="config.currencyCode">
+          <input type="text" class="fancy-input" [(ngModel)]="config.currencyCode" />
         </div>
       </div>
       <div class="settings-group">
         <label>Mínimo de Retirada (€)</label>
-        <input type="number" class="fancy-input" [(ngModel)]="config.minWithdrawal">
+        <input type="number" class="fancy-input" [(ngModel)]="config.minWithdrawal" />
       </div>
       <div class="switch-group">
         <div class="switch-info">
@@ -73,13 +73,11 @@
           <p>Permitir transacciones directas mediante tarjeta</p>
         </div>
         <label class="nexus-switch">
-          <input type="checkbox" [(ngModel)]="config.stripeEnabled">
+          <input type="checkbox" [(ngModel)]="config.stripeEnabled" />
           <span class="slider"></span>
         </label>
       </div>
     </div>
-
-    
 
     <!-- Correo / SMTP -->
     <div class="settings-card">
@@ -90,20 +88,20 @@
       <div class="form-row">
         <div class="settings-group flex-2">
           <label>Host SMTP</label>
-          <input type="text" class="fancy-input" [(ngModel)]="config.smtpHost">
+          <input type="text" class="fancy-input" [(ngModel)]="config.smtpHost" />
         </div>
         <div class="settings-group flex-1">
           <label>Puerto</label>
-          <input type="number" class="fancy-input" [(ngModel)]="config.smtpPort">
+          <input type="number" class="fancy-input" [(ngModel)]="config.smtpPort" />
         </div>
       </div>
       <div class="settings-group">
         <label>Usuario SMTP</label>
-        <input type="text" class="fancy-input" [(ngModel)]="config.smtpUser">
+        <input type="text" class="fancy-input" [(ngModel)]="config.smtpUser" />
       </div>
       <div class="settings-group">
         <label>Password SMTP</label>
-        <input type="password" class="fancy-input" [(ngModel)]="config.smtpPass">
+        <input type="password" class="fancy-input" [(ngModel)]="config.smtpPass" />
       </div>
     </div>
 
@@ -119,22 +117,22 @@
           <p>Obligar a todos los vendedores a usar autenticación en dos pasos</p>
         </div>
         <label class="nexus-switch">
-          <input type="checkbox" [(ngModel)]="config.require2FA">
+          <input type="checkbox" [(ngModel)]="config.require2FA" />
           <span class="slider"></span>
         </label>
       </div>
       <div class="form-row">
         <div class="settings-group">
           <label>Intentos fallidos</label>
-          <input type="number" class="fancy-input" [(ngModel)]="config.maxLoginAttempts">
+          <input type="number" class="fancy-input" [(ngModel)]="config.maxLoginAttempts" />
         </div>
         <div class="settings-group d-flex align-center pt-20">
           <div class="switch-group w-100">
             <div class="switch-info">
-              <h4>Captcha</h4>
+              <h4 style="margin-right: 15px">Captcha</h4>
             </div>
             <label class="nexus-switch">
-              <input type="checkbox" [(ngModel)]="config.recaptchaEnabled">
+              <input type="checkbox" [(ngModel)]="config.recaptchaEnabled" />
               <span class="slider"></span>
             </label>
           </div>
@@ -146,7 +144,7 @@
           <p>Permitir que nuevos usuarios se registren libremente</p>
         </div>
         <label class="nexus-switch">
-          <input type="checkbox" [(ngModel)]="config.openRegistration">
+          <input type="checkbox" [(ngModel)]="config.openRegistration" />
           <span class="slider"></span>
         </label>
       </div>
@@ -168,11 +166,11 @@
       </div>
       <div class="settings-group">
         <label>Cloud Name / Bucket</label>
-        <input type="text" class="fancy-input" [(ngModel)]="config.cloudinaryName">
+        <input type="text" class="fancy-input" [(ngModel)]="config.cloudinaryName" />
       </div>
       <div class="settings-group">
         <label>API Key / Access Key</label>
-        <input type="password" class="fancy-input" [(ngModel)]="config.cloudinaryApiKey">
+        <input type="password" class="fancy-input" [(ngModel)]="config.cloudinaryApiKey" />
       </div>
     </div>
 
@@ -192,7 +190,7 @@
           <p>Los productos nuevos se publicarán sin revisión manual</p>
         </div>
         <label class="nexus-switch">
-          <input type="checkbox" [(ngModel)]="config.autoApproveProducts">
+          <input type="checkbox" [(ngModel)]="config.autoApproveProducts" />
           <span class="slider"></span>
         </label>
       </div>
@@ -200,9 +198,12 @@
       <div class="moderation-controls">
         <div class="search-box">
           <i class="fa-solid fa-search"></i>
-          <input type="text" placeholder="Buscar o añadir palabra..." 
-                 [(ngModel)]="searchTerm" 
-                 (keyup.enter)="addKeyword(searchTerm)">
+          <input
+            type="text"
+            placeholder="Buscar o añadir palabra..."
+            [(ngModel)]="searchTerm"
+            (keyup.enter)="addKeyword(searchTerm)"
+          />
         </div>
         <button class="btn-add-tag" (click)="addKeyword(searchTerm)">
           <i class="fa-solid fa-plus"></i> Añadir
@@ -215,13 +216,14 @@
           <i class="fa-solid fa-times" (click)="removeKeyword(word)"></i>
         </div>
         <div class="empty-results" *ngIf="filteredKeywords().length === 0">
-           No se han encontrado coincidencias para "{{ searchTerm }}"
+          No se han encontrado coincidencias para "{{ searchTerm }}"
         </div>
       </div>
 
       <div class="moderation-info">
         <i class="fa-solid fa-info-circle"></i>
-        Presiona Enter para añadir una nueva palabra prohibida. El sistema censurará estas palabras en el chat instantáneamente.
+        Presiona Enter para añadir una nueva palabra prohibida. El sistema censurará estas palabras
+        en el chat instantáneamente.
       </div>
     </div>
   </div>
