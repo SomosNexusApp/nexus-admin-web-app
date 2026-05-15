@@ -116,7 +116,17 @@ export class SancionesComponent implements OnInit {
   }
 
   exportCsv(): void {
-    window.open(`${this.svc['base']}/sanciones/export`, '_blank');
+    this.svc.exportSanciones().subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'sanciones.csv';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => console.error('Error exportando sanciones', err)
+    });
   }
 
   prevPage(): void { if (this.page > 0) { this.page--; this.load(); } }

@@ -17,11 +17,13 @@ export class FraudeComponent implements OnInit {
 
   flags = signal<AdminFraudeFlag[]>([]);
   productos = signal<AdminProductoSospechoso[]>([]);
+  stats = signal<any[]>([]);
   loading = signal(true);
 
   ngOnInit(): void {
     this.svc.getFraudeFlags().subscribe({ next: f => { this.flags.set(f); this.loading.set(false); } });
     this.svc.getProductosSospechosos().subscribe({ next: p => this.productos.set(p) });
+    this.svc.getFraudeEstadisticas().subscribe({ next: s => this.stats.set(s) });
   }
 
   marcarRevisado(userId: number): void {

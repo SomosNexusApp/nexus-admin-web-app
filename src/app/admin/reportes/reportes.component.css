@@ -61,7 +61,11 @@
 .report-meta-item { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; font-size: 0.875rem; }
 .meta-label { font-size: 0.7rem; color: var(--text-dim); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
 .motivo-tag { background: rgba(255,255,255,0.06); border-radius: 8px; padding: 3px 10px; font-size: 0.8rem; font-weight: 600; width: fit-content; }
-.status-badge { padding: 3px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; width: fit-content; }
+.status-badge { 
+  padding: 3px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; width: fit-content; 
+  white-space: nowrap;
+  display: inline-block;
+}
 .badge-pendiente { background: rgba(245,158,11,0.15); color: #f59e0b; }
 .badge-en_revision { background: rgba(59,130,246,0.15); color: #60a5fa; }
 .badge-resuelto { background: rgba(16,185,129,0.15); color: #10b981; }

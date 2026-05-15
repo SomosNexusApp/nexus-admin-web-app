@@ -106,6 +106,10 @@ export class AdminService {
     return this.http.get<PagedResult<AdminSancion>>(`${this.base}/sanciones`, { params });
   }
 
+  exportSanciones(): Observable<Blob> {
+    return this.http.get(`${this.base}/sanciones/export`, { responseType: 'blob' });
+  }
+
   // ── Fraude ───────────────────────────────────────────────────────────────
   getFraudeFlags(): Observable<AdminFraudeFlag[]> {
     return this.http.get<AdminFraudeFlag[]>(`${this.base}/fraude/flags`);
@@ -129,15 +133,15 @@ export class AdminService {
   }
 
   aceptarDevolucion(id: number, body: any): Observable<void> {
-    return this.http.patch<void>(`${environment.apiUrl}/api/devoluciones/${id}/aceptar`, body);
+    return this.http.patch<void>(`${this.base}/devoluciones/${id}/aceptar`, body);
   }
 
   rechazarDevolucion(id: number, motivo: string): Observable<void> {
-    return this.http.patch<void>(`${environment.apiUrl}/api/devoluciones/${id}/rechazar`, { motivo });
+    return this.http.patch<void>(`${this.base}/devoluciones/${id}/rechazar`, { motivo });
   }
 
   cerrarDevolucion(id: number, motivo: string): Observable<void> {
-    return this.http.patch<void>(`${environment.apiUrl}/api/devoluciones/${id}/cerrar-admin`, { motivo });
+    return this.http.patch<void>(`${this.base}/devoluciones/${id}/cerrar-admin`, { motivo });
   }
 
   // ── Audit Log ────────────────────────────────────────────────────────────

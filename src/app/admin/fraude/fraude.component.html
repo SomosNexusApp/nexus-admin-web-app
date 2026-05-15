@@ -3,6 +3,22 @@
     <h1 class="page-title"><i class="fa-solid fa-magnifying-glass"></i> Detección de Fraude</h1>
   </div>
 
+  <!-- KPIs de Fraude -->
+  <div class="fraude-kpis mb-card">
+    <div class="kpi-card" *ngFor="let s of stats().slice(-4)">
+      <div class="kpi-val">{{ s.valor }}</div>
+      <div class="kpi-label">Reportes {{ s.dia | date:'dd MMM' }}</div>
+      <div class="kpi-bar-wrap">
+        <div class="kpi-bar" [style.width.%]="(s.valor / 10) * 100"></div>
+      </div>
+    </div>
+    <div class="kpi-card highlight">
+      <div class="kpi-val">{{ flags().length }}</div>
+      <div class="kpi-label">Usuarios Marcados</div>
+      <div class="kpi-icon"><i class="fa-solid fa-user-shield"></i></div>
+    </div>
+  </div>
+
   <!-- Usuarios Flaggeados -->
   <div class="section-header"><h2>Usuarios Flaggeados</h2></div>
   <div class="admin-card mb-card">

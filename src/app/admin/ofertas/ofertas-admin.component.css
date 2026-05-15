@@ -56,7 +56,11 @@
 .votes-badge.positive { color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
 .votes-badge.negative { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
 
-.status-badge { padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
+.status-badge { 
+  padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; 
+  white-space: nowrap;
+  display: inline-block;
+}
 .badge-green { background: rgba(16,185,129,0.15); color: #10b981; }
 .badge-orange { background: rgba(245,158,11,0.15); color: #f59e0b; }
 .badge-red { background: rgba(239,68,68,0.15); color: #ef4444; }

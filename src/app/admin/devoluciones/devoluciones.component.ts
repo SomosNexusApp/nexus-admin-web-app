@@ -15,8 +15,8 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
 export class DevolucionesAdminComponent implements OnInit {
   private svc = inject(AdminService);
 
-  tabs = ['SOLICITADA', 'EN_REVISION', 'ACEPTADA', 'RECHAZADA', 'COMPLETADA'];
-  activeTab = signal('SOLICITADA');
+  tabs = ['TODAS', 'SOLICITADA', 'ACEPTADA', 'RECHAZADA', 'DEVOLUCION_ENVIADA', 'COMPLETADA'];
+  activeTab = signal('TODAS');
   result = signal<PagedResult<AdminDevolucion> | null>(null);
   selectedDev = signal<AdminDevolucion | null>(null);
   panelOpen = signal(false);

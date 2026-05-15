@@ -30,3 +30,16 @@
 .btn-action-sm { padding: 5px 14px; border-radius: 8px; border: 1px solid rgba(16,185,129,0.3); background: rgba(16,185,129,0.1); color: #34d399; font-size: 0.75rem; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif; transition: var(--transition); }
 .btn-action-sm:hover { background: rgba(16,185,129,0.2); }
 .empty-row { text-align: center; color: var(--text-dim); padding: 40px 16px !important; }
+
+/* --- KPIs Fraud Style --- */
+.fraude-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.kpi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; position: relative; overflow: hidden; transition: var(--transition); }
+.kpi-card:hover { background: rgba(255,255,255,0.05); transform: translateY(-3px); }
+.kpi-val { font-size: 1.8rem; font-weight: 900; color: #fff; line-height: 1; margin-bottom: 4px; }
+.kpi-label { font-size: 0.72rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-bar-wrap { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; margin-top: 12px; }
+.kpi-bar { height: 100%; background: var(--accent); border-radius: 2px; box-shadow: 0 0 10px var(--accent); }
+.kpi-card.highlight { background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(124,58,237,0.02)); border-color: rgba(124,58,237,0.2); }
+.kpi-card.highlight .kpi-val { color: var(--accent); }
+.kpi-icon { position: absolute; right: 15px; top: 15px; font-size: 1.5rem; opacity: 0.1; color: var(--accent); }
+

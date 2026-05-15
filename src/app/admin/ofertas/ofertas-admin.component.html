@@ -146,7 +146,7 @@
             </button>
           } @else if (selectedOferta()!.estado === 'ACTIVA') {
              <button class="action-btn action-danger" (click)="showRechazarModal.set(true)">
-              <i class="fa-solid fa-pause"></i> Retirar de la venta
+              <i class="fa-solid fa-pause"></i> Retirar de Nexus
             </button>
           } @else if (selectedOferta()!.estado === 'RECHAZADA') {
             <button class="action-btn action-success" (click)="aprobar(selectedOferta()!.id)">
