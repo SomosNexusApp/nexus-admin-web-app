@@ -40,24 +40,23 @@ import { AuditLogEntry, PagedResult } from '../admin.models';
             <th>Admin</th>
             <th>Acción</th>
             <th>Entidad</th>
-            <th>ID</th>
             <th>Detalle</th>
-            <th>IP</th>
           </tr>
         </thead>
         <tbody>
           @for (e of result()?.content || []; track e.id) {
-            <tr>
+            <tr class="clickable-row" (click)="selectedLog.set(e)">
               <td class="ts-cell">{{ formatDate(e.timestamp) }}</td>
               <td class="admin-cell">{{ e.adminUser }}</td>
               <td><span class="accion-chip">{{ e.accion }}</span></td>
-              <td class="dim-cell">{{ e.entidadTipo }}</td>
-              <td class="dim-cell">{{ e.entidadId || '—' }}</td>
+              <td class="dim-cell">
+                <span style="font-size: 0.75rem; opacity: 0.7;">{{ e.entidadTipo }}</span><br>
+                <strong>{{ e.entidadNombre || e.entidadId || '—' }}</strong>
+              </td>
               <td class="detalle-cell">{{ e.detalle || '—' }}</td>
-              <td class="ip-cell">{{ e.ip }}</td>
             </tr>
           } @empty {
-            <tr><td colspan="7" class="empty-row">Sin entradas en el Audit Log</td></tr>
+            <tr><td colspan="5" class="empty-row">Sin entradas en el Audit Log</td></tr>
           }
         </tbody>
       </table>
@@ -70,6 +69,49 @@ import { AuditLogEntry, PagedResult } from '../admin.models';
       </div>
     }
   </div>
+
+  @if (selectedLog()) {
+    <div class="modal-overlay" (click)="selectedLog.set(null)">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Detalles del Registro de Auditoría</h2>
+          <button class="close-btn" (click)="selectedLog.set(null)"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>Timestamp</label>
+              <span>{{ formatDate(selectedLog()!.timestamp) }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Admin User</label>
+              <span class="admin-cell">{{ selectedLog()!.adminUser }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Acción</label>
+              <span><span class="accion-chip">{{ selectedLog()!.accion }}</span></span>
+            </div>
+            <div class="detail-item">
+              <label>Tipo Entidad</label>
+              <span>{{ selectedLog()!.entidadTipo || '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Identificador Entidad</label>
+              <span>{{ selectedLog()!.entidadId || '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Nombre Entidad</label>
+              <span>{{ selectedLog()!.entidadNombre || '—' }}</span>
+            </div>
+            <div class="detail-item full-width">
+              <label>Detalles Completos</label>
+              <p class="detail-text">{{ selectedLog()!.detalle || 'No hay detalles adicionales' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
 </div>
   `,
   styles: [`
@@ -107,6 +149,21 @@ import { AuditLogEntry, PagedResult } from '../admin.models';
 .pagination { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 16px; border-top: 1px solid var(--border); font-size: 0.875rem; color: var(--text-dim); }
 .page-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .page-btn:disabled { opacity: 0.3; cursor: default; }
+
+.clickable-row { transition: background 0.2s; cursor: pointer; }
+.clickable-row:hover { background: rgba(255,255,255,0.04); }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal-content { background: #13141f; border: 1px solid var(--border); border-radius: 20px; padding: 24px; max-width: 600px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.4); animation: slideIn 0.3s cubic-bezier(0.16,1,0.3,1); }
+@keyframes slideIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.modal-header h2 { margin: 0; font-size: 1.3rem; color: #fff; font-weight: 700; }
+.close-btn { background: rgba(255,255,255,0.05); border: none; color: var(--text-dim); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+.close-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.detail-item label { display: block; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 700; }
+.detail-item span { font-size: 0.95rem; color: #fff; font-weight: 500; word-break: break-all; }
+.detail-item.full-width { grid-column: 1 / -1; }
+.detail-text { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin: 0; font-size: 0.9rem; color: #ddd; line-height: 1.5; white-space: pre-wrap; font-family: monospace; }
   `],
 })
 export class AuditLogComponent implements OnInit {
@@ -114,6 +171,7 @@ export class AuditLogComponent implements OnInit {
 
   result = signal<PagedResult<AuditLogEntry> | null>(null);
   loading = signal(true);
+  selectedLog = signal<AuditLogEntry | null>(null);
   page = 0;
 
   // Filters

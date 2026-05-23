@@ -107,18 +107,6 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     const healthSub = interval(60_000).subscribe(() => this.loadHealth());
     const badgeSub = interval(30_000).subscribe(() => this.loadReportesBadge());
     this.subs.push(healthSub, badgeSub);
-
-    // Auto-inject badge on Reportes navitem
-    this.subs.push(
-      this.adminSvc.getCountReportesPendientes().subscribe(res => {
-        this.reportesBadge.set(res.total);
-        const modGroup = this.navGroups.find(g => g.title === 'Moderación');
-        if (modGroup) {
-          const rep = modGroup.items.find(i => i.label === 'Reportes');
-          if (rep) rep.badge = res.total;
-        }
-      })
-    );
   }
 
   @HostListener('window:resize')
@@ -140,11 +128,6 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     this.adminSvc.getCountReportesPendientes().subscribe({
       next: r => {
         this.reportesBadge.set(r.total);
-        const mod = this.navGroups.find(g => g.title === 'Moderación');
-        if (mod) {
-          const rep = mod.items.find(i => i.label === 'Reportes');
-          if (rep) rep.badge = r.total;
-        }
       },
     });
   }

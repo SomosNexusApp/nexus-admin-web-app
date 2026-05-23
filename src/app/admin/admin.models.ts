@@ -107,8 +107,8 @@ export interface AuditLogEntry {
   accion: string;
   entidadTipo: string;
   entidadId?: number;
+  entidadNombre?: string;
   detalle?: string;
-  ip: string;
   timestamp: string;
 }
 

@@ -49,7 +49,9 @@
             >
               <i class="fa-solid {{ item.icon }}"></i>
               <span>{{ item.label }}</span>
-              @if (item.badge && item.badge > 0) {
+              @if (item.label === 'Reportes' && reportesBadge() > 0) {
+                <span class="nav-badge" [class.pulsing]="reportesBadge() > 5">{{ reportesBadge() }}</span>
+              } @else if (item.badge && item.badge > 0) {
                 <span class="nav-badge" [class.pulsing]="item.badge > 5">{{ item.badge }}</span>
               }
             </a>
