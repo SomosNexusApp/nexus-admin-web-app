@@ -134,6 +134,8 @@
 .badge-origin--bought { background: rgba(16,185,129,.18); border-color: rgba(16,185,129,.4); color: #6ee7b7; }
 .badge-origin--sold { background: rgba(245,158,11,.18); border-color: rgba(245,158,11,.4); color: #fcd34d; }
 .badge-origin--fav { background: rgba(239,68,68,.18); border-color: rgba(239,68,68,.4); color: #fca5a5; }
+.badge-origin--spark { background: rgba(234,179,8,.18); border-color: rgba(234,179,8,.4); color: #fde047; }
+.badge-origin--drip { background: rgba(59,130,246,.18); border-color: rgba(59,130,246,.4); color: #93c5fd; }
 
 /* ── Rich cards ── */
 .sca-rich-card { margin-top: 8px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(148,163,184,.25); border-radius: 10px; padding: 8px; background: rgba(2,6,23,.45); }

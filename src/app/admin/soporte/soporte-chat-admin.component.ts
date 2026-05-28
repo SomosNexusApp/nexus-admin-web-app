@@ -261,6 +261,8 @@ export class SoporteChatAdminComponent implements OnDestroy {
       case 'COMPRADO': return 'badge-origin--bought';
       case 'VENDIDO': return 'badge-origin--sold';
       case 'FAVORITO': return 'badge-origin--fav';
+      case 'SPARK': return 'badge-origin--spark';
+      case 'DRIP': return 'badge-origin--drip';
       default: return '';
     }
   }
@@ -271,6 +273,8 @@ export class SoporteChatAdminComponent implements OnDestroy {
       case 'COMPRADO': return 'Comprado';
       case 'VENDIDO': return 'Vendido';
       case 'FAVORITO': return '❤ Favorito';
+      case 'SPARK': return '⚡ Spark';
+      case 'DRIP': return '💧 Drip';
       default: return origen || '';
     }
   }
