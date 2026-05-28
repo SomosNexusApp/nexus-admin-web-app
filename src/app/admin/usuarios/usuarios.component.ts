@@ -4,7 +4,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { debounceTime, Subject } from 'rxjs';
+import { debounceTime, Subject, EMPTY } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { AdminService } from '../admin.service';
 import { AdminUsuario, PagedResult } from '../admin.models';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
@@ -39,7 +40,6 @@ export class UsuariosAdminComponent implements OnInit {
   showBanModal = signal(false);
   showDesbanModal = signal(false);
   showAvisoModal = signal(false);
-  showImpersonarModal = signal(false);
 
   // Modal form fields
   motivoSuspension = '';
@@ -47,7 +47,6 @@ export class UsuariosAdminComponent implements OnInit {
   motivoBan = '';
   motivoDesban = '';
   mensajeAviso = '';
-  confirmarImpersonar = false;
 
   private search$ = new Subject<string>();
 
@@ -128,21 +127,15 @@ export class UsuariosAdminComponent implements OnInit {
   doEnviarAviso(): void {
     const u = this.selectedUser();
     if (!u || this.mensajeAviso.length < 20) return;
-    this.svc.enviarAviso(u.id, this.mensajeAviso).subscribe(() => {
+    this.svc.enviarAviso(u.id, this.mensajeAviso).pipe(
+      catchError(() => EMPTY)
+    ).subscribe(() => {
       this.showAvisoModal.set(false);
       this.mensajeAviso = '';
+      this.toast.success(`Aviso enviado a @${u.user}.`, 'Aviso enviado');
     });
   }
 
-  doImpersonar(): void {
-    const u = this.selectedUser();
-    if (!u || !this.confirmarImpersonar) return;
-    this.svc.impersonarUsuario(u.id).subscribe(res => {
-      this.showImpersonarModal.set(false);
-      this.confirmarImpersonar = false;
-      window.open(`${environment.appUrl}?impToken=${res.token}`, '_blank');
-    });
-  }
 
   prevPage(): void { if (this.page > 0) { this.page--; this.loadUsuarios(); } }
   nextPage(): void {

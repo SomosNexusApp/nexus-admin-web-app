@@ -171,9 +171,7 @@
               <i class="fa-solid fa-unlock"></i> Levantar sanción
             </button>
           }
-          <button class="action-btn action-impersonate" (click)="showImpersonarModal.set(true)">
-            <i class="fa-solid fa-user-secret"></i> Impersonar
-          </button>
+
         </div>
       </div>
     </div>
@@ -248,22 +246,4 @@
   </div>
 }
 
-<!-- MODAL IMPERSONAR (doble confirmación) -->
-@if (showImpersonarModal()) {
-  <div class="modal-overlay">
-    <div class="modal">
-      <h3><i class="fa-solid fa-user-secret"></i> Impersonar usuario</h3>
-      <div class="modal-warning danger">
-        ⚠️ Esta acción abrirá la app como <strong>&#64;{{ selectedUser()!.user }}</strong> en modo de solo lectura. Queda registrado en el Audit Log.
-      </div>
-      <label class="checkbox-row">
-        <input type="checkbox" [(ngModel)]="confirmarImpersonar">
-        <span>Confirmo que esta impersonación tiene una razón legítima.</span>
-      </label>
-      <div class="modal-actions">
-        <button class="btn-modal-cancel" (click)="showImpersonarModal.set(false); confirmarImpersonar = false">Cancelar</button>
-        <button class="btn-modal-confirm danger" [disabled]="!confirmarImpersonar" (click)="doImpersonar()">Impersonar</button>
-      </div>
-    </div>
-  </div>
-}
+

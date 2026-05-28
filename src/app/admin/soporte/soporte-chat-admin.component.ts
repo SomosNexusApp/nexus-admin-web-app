@@ -6,6 +6,17 @@ import { environment } from '../../../environments/environment';
 import { interval, Subscription } from 'rxjs';
 import { AdminService } from '../admin.service';
 
+interface UsuarioPerfil {
+  id: number;
+  user: string;
+  nombre: string;
+  apellidos: string;
+  email: string;
+  avatar: string;
+  baneado: boolean;
+  verificado: boolean;
+}
+
 interface SesionRow {
   id: number;
   sessionToken: string;
@@ -15,6 +26,7 @@ interface SesionRow {
   insistenciaAgente: number;
   actualizadoEn: string;
   numMensajes: number;
+  usuario?: UsuarioPerfil;
 }
 
 interface MsgRow {
@@ -39,6 +51,7 @@ export class SoporteChatAdminComponent implements OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private adminService = inject(AdminService);
   private base = `${environment.apiUrl}/api/admin/soporte`;
+  readonly appUrl = environment.appUrl;
 
   sesiones = signal<SesionRow[]>([]);
   seleccion = signal<SesionRow | null>(null);
@@ -57,7 +70,7 @@ export class SoporteChatAdminComponent implements OnDestroy {
 
   constructor() {
     this.refrescarSesiones();
-    this.pollSub = interval(5000).subscribe(() => {
+    this.pollSub = interval(3000).subscribe(() => {
       this.refrescarSesiones();
       const s = this.seleccion();
       if (s) this.cargarMensajes(s.id, false);
@@ -71,6 +84,12 @@ export class SoporteChatAdminComponent implements OnDestroy {
   refrescarSesiones(): void {
     this.http.get<SesionRow[]>(`${this.base}/sessions`).subscribe((list) => {
       this.sesiones.set(list);
+      // Refresh selected session data if still active
+      const sel = this.seleccion();
+      if (sel) {
+        const updated = list.find(s => s.id === sel.id);
+        if (updated) this.seleccion.set(updated);
+      }
       this.cdr.markForCheck();
     });
   }
@@ -110,6 +129,8 @@ export class SoporteChatAdminComponent implements OnDestroy {
     const s = this.seleccion();
     if (!s) return;
     this.http.post(`${this.base}/sessions/${s.id}/takeover`, {}).subscribe(() => {
+      // Immediately update seleccion so the button swaps without waiting for poll
+      this.seleccion.update(cur => cur ? { ...cur, humanTakeover: true } : cur);
       this.cargarMensajes(s.id, true);
       this.refrescarSesiones();
     });
@@ -152,6 +173,8 @@ export class SoporteChatAdminComponent implements OnDestroy {
     const s = this.seleccion();
     if (!s) return;
     this.http.post(`${this.base}/sessions/${s.id}/resume-ai`, {}).subscribe(() => {
+      // Immediately update seleccion so the button swaps without waiting for poll
+      this.seleccion.update(cur => cur ? { ...cur, humanTakeover: false } : cur);
       this.cargarMensajes(s.id, true);
       this.refrescarSesiones();
     });
@@ -212,7 +235,7 @@ export class SoporteChatAdminComponent implements OnDestroy {
     const type = this.showPicker();
     const text = `${item.titulo}`;
 
-    this.http.post(`${this.base}/sessions/${s.id}/reply`, { 
+    this.http.post(`${this.base}/sessions/${s.id}/reply`, {
       text: text,
       tipoContenido: type,
       referenciaId: item.id
@@ -220,5 +243,35 @@ export class SoporteChatAdminComponent implements OnDestroy {
       this.showPicker.set('OFF');
       this.cargarMensajes(s.id, false);
     });
+  }
+
+  /** Label visible in the session list sidebar */
+  sesionLabel(s: SesionRow): string {
+    if (s.usuario) {
+      const nombre = s.usuario.nombre?.trim() || s.usuario.user;
+      return nombre || `Usuario #${s.usuarioId}`;
+    }
+    return s.usuarioId ? `Usuario #${s.usuarioId}` : 'Sesión anónima';
+  }
+
+  /** CSS class for origin badge in picker */
+  origenClass(origen: string): string {
+    switch (origen) {
+      case 'SUBIDO': case 'PUBLICADA': case 'PUBLICADO': return 'badge-origin--own';
+      case 'COMPRADO': return 'badge-origin--bought';
+      case 'VENDIDO': return 'badge-origin--sold';
+      case 'FAVORITO': return 'badge-origin--fav';
+      default: return '';
+    }
+  }
+
+  origenLabel(origen: string): string {
+    switch (origen) {
+      case 'SUBIDO': case 'PUBLICADA': case 'PUBLICADO': return 'Publicado';
+      case 'COMPRADO': return 'Comprado';
+      case 'VENDIDO': return 'Vendido';
+      case 'FAVORITO': return '❤ Favorito';
+      default: return origen || '';
+    }
   }
 }

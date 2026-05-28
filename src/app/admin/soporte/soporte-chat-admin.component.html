@@ -18,9 +18,29 @@
         >
           <div class="sca-item-header">
             <span class="sca-item-id">#{{ s.id }}</span>
-            <span class="sca-item-meta">{{ s.numMensajes }} mensajes</span>
+            <span class="sca-item-meta">{{ s.numMensajes }} msg</span>
           </div>
-          
+
+          <!-- User info in sidebar -->
+          @if (s.usuario) {
+            <div class="sca-item-user">
+              @if (s.usuario.avatar) {
+                <img [src]="s.usuario.avatar" alt="avatar" class="sca-item-avatar" />
+              } @else {
+                <div class="sca-item-avatar sca-item-avatar--placeholder">{{ s.usuario.user[0]?.toUpperCase() }}</div>
+              }
+              <div class="sca-item-userinfo">
+                <span class="sca-item-nombre">{{ s.usuario.nombre || s.usuario.user }}</span>
+                <span class="sca-item-username">&#64;{{ s.usuario.user }}</span>
+              </div>
+            </div>
+          } @else {
+            <div class="sca-item-user sca-item-user--anon">
+              <i class="fas fa-user-slash"></i>
+              <span>Sesión anónima</span>
+            </div>
+          }
+
           <div class="sca-badges">
             @if (s.humanTakeover) {
               <span class="sca-badge">Control Manual</span>
@@ -30,6 +50,7 @@
             @if (s.insistenciaAgente >= 2) {
               <span class="sca-badge sca-badge--warn">Escalada</span>
             }
+            <span class="sca-badge sca-badge--status" [attr.data-status]="s.status">{{ s.status }}</span>
           </div>
         </button>
       } @empty {
@@ -42,14 +63,54 @@
 
     <section class="sca-panel">
       @if (seleccion(); as sel) {
+
+        <!-- SESSION HEADER with full user info card -->
         <div class="sca-header">
           <div class="sca-header-info">
-            <h3>Sesión #{{ sel.id }}</h3>
-            <span class="sca-token">{{ sel.sessionToken }}</span>
-            <span class="sca-status-badge" [attr.data-status]="sel.status">{{ sel.status }}</span>
-            <span class="sca-user-chip" *ngIf="sel.usuarioId">Usuario #{{ sel.usuarioId }}</span>
-            <span class="sca-user-chip sca-user-chip--ghost" *ngIf="!sel.usuarioId">Sesión anónima</span>
+            <div class="sca-session-meta">
+              <h3>Sesión #{{ sel.id }}</h3>
+              <span class="sca-status-badge" [attr.data-status]="sel.status">{{ sel.status }}</span>
+            </div>
+
+            @if (sel.usuario) {
+              <!-- Rich user info card -->
+              <div class="sca-user-card">
+                <div class="sca-user-card-avatar">
+                  @if (sel.usuario.avatar) {
+                    <img [src]="sel.usuario.avatar" alt="avatar" />
+                  } @else {
+                    <div class="sca-avatar-placeholder">{{ sel.usuario.user[0]?.toUpperCase() }}</div>
+                  }
+                  @if (sel.usuario.verificado) {
+                    <span class="sca-verified-dot" title="Verificado">✓</span>
+                  }
+                </div>
+                <div class="sca-user-card-info">
+                  <div class="sca-user-card-name">
+                    {{ sel.usuario.nombre }} {{ sel.usuario.apellidos }}
+                    @if (sel.usuario.baneado) {
+                      <span class="sca-ban-chip">BANEADO</span>
+                    }
+                  </div>
+                  <div class="sca-user-card-sub">
+                    <span class="sca-user-card-username">&#64;{{ sel.usuario.user }}</span>
+                    <span class="sca-user-card-sep">·</span>
+                    <span class="sca-user-card-email">{{ sel.usuario.email }}</span>
+                  </div>
+                  <div class="sca-user-card-links">
+                    <a [href]="appUrl + '/perfil/' + sel.usuario.user" target="_blank" class="sca-profile-link">
+                      <i class="fas fa-external-link-alt"></i> Ver perfil público
+                    </a>
+                  </div>
+                </div>
+              </div>
+            } @else if (sel.usuarioId) {
+              <span class="sca-user-chip">Usuario #{{ sel.usuarioId }}</span>
+            } @else {
+              <span class="sca-user-chip sca-user-chip--ghost">Sesión anónima</span>
+            }
           </div>
+
           <div class="sca-header-actions">
             @if (!sel.humanTakeover) {
               <button class="sca-btn sca-btn-primary" (click)="takeover()">
@@ -61,7 +122,7 @@
               </button>
             }
             <button class="sca-btn sca-btn-info" (click)="sendSurvey()">
-              <i class="fas fa-poll"></i> Pedir Encuesta
+              <i class="fas fa-poll"></i> Encuesta
             </button>
             <button class="sca-btn sca-btn-danger" (click)="closeChat()">
               <i class="fas fa-times"></i> Cerrar
@@ -69,23 +130,24 @@
           </div>
         </div>
 
+        <!-- Purchases section -->
         <div class="sca-support-purchases">
-          <h4>Compras del usuario en esta sesión</h4>
+          <h4>Compras del usuario</h4>
           <p class="sca-hint" *ngIf="!sel.usuarioId">
-            Esta sesión no está vinculada a una cuenta, por eso no se muestran compras.
+            Esta sesión no está vinculada a una cuenta.
           </p>
           <p class="sca-hint" *ngIf="sel.usuarioId && comprasUsuario().length === 0">
             No hay compras registradas para este usuario.
           </p>
           <div class="sca-refund-reason" *ngIf="sel.usuarioId && comprasUsuario().length > 0">
-            <input type="text" [(ngModel)]="refundReason" placeholder="Motivo de reembolso" />
+            <input type="text" [(ngModel)]="refundReason" placeholder="Motivo de reembolso (opcional)" />
           </div>
           <div class="sca-purchase-list" *ngIf="sel.usuarioId && comprasUsuario().length > 0">
             @for (c of comprasUsuario(); track c.id) {
               <div class="sca-purchase-item">
                 <div>
                   <strong>#{{ c.id }} · {{ c.productoTitulo }}</strong>
-                  <span>Estado: {{ c.estado }} · {{ c.precioFinal | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</span>
+                  <span>{{ c.estado }} · {{ c.precioFinal | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</span>
                 </div>
                 <button class="sca-btn sca-btn-danger" (click)="reembolsarDesdeChat(c.id)" [disabled]="c.estado === 'REEMBOLSADA' || c.estado === 'CANCELADA'">
                   Reembolsar
@@ -95,6 +157,7 @@
           </div>
         </div>
 
+        <!-- Messages -->
         <div class="sca-messages" id="scaMessages">
           @if (loading()) {
             <div class="sca-loading"><div class="spinner-sm"></div></div>
@@ -104,7 +167,7 @@
             <div class="sca-msg" [ngClass]="'sca-msg-' + m.rol.toLowerCase()">
               <div class="sca-msg-bubble">
                 <p>{{ m.contenido }}</p>
-                
+
                 <!-- Rich Cards -->
                 @if (m.tipoContenido === 'PRODUCTO') {
                   <div class="sca-rich-card">
@@ -145,20 +208,21 @@
           }
         </div>
 
+        <!-- Input area -->
         <div class="sca-input-area">
           <div class="sca-input-actions">
-            <button class="sca-tool-btn" (click)="openPicker('PRODUCTO')" title="Enviar producto">
+            <button class="sca-tool-btn" (click)="openPicker('PRODUCTO')" title="Enviar producto relacionado">
               <i class="fas fa-box"></i>
             </button>
-            <button class="sca-tool-btn" (click)="openPicker('OFERTA')" title="Enviar oferta">
+            <button class="sca-tool-btn" (click)="openPicker('OFERTA')" title="Enviar oferta relacionada">
               <i class="fas fa-tag"></i>
             </button>
-            <button class="sca-tool-btn" (click)="openPicker('VEHICULO')" title="Enviar vehículo">
+            <button class="sca-tool-btn" (click)="openPicker('VEHICULO')" title="Enviar vehículo relacionado">
               <i class="fas fa-car"></i>
             </button>
           </div>
-          <textarea 
-            [(ngModel)]="replyText" 
+          <textarea
+            [(ngModel)]="replyText"
             placeholder="Escribe una respuesta..."
             (keydown.enter)="$event.preventDefault(); enviar()"
           ></textarea>
@@ -176,21 +240,24 @@
   </div>
 </div>
 
-<!-- Picker Overlay -->
+<!-- Picker Overlay — shows items the user has interacted with -->
 @if (showPicker() !== 'OFF') {
   <div class="sca-picker-overlay">
     <div class="sca-picker-card">
       <div class="sca-picker-header">
-        <h4>Seleccionar {{ showPicker() }}</h4>
+        <div>
+          <h4>Seleccionar {{ showPicker() }}</h4>
+          <p class="sca-picker-hint">Solo se muestran artículos con los que el usuario ha interactuado</p>
+        </div>
         <button class="sca-close-picker" (click)="showPicker.set('OFF')">
           <i class="fas fa-times"></i>
         </button>
       </div>
       <div class="sca-picker-search">
-        <input 
-          type="text" 
-          [(ngModel)]="searchQuery" 
-          (input)="buscarItems()" 
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (input)="buscarItems()"
           [placeholder]="'Buscar ' + showPicker().toLowerCase() + '...'"
         />
       </div>
@@ -199,15 +266,23 @@
           <div class="sca-picker-item" (click)="sendItem(item)">
             <div class="sca-item-info">
               <img *ngIf="item.imagen" [src]="item.imagen" alt="item" />
-              <div>
+              <div class="sca-item-text">
                 <strong>{{ item.titulo }}</strong>
-                <span>{{ item.precio | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</span>
+                <span class="sca-item-price">{{ item.precio | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</span>
               </div>
             </div>
-            <i class="fas fa-share"></i>
+            <div class="sca-item-right">
+              @if (item.origen) {
+                <span class="badge-origin" [ngClass]="origenClass(item.origen)">{{ origenLabel(item.origen) }}</span>
+              }
+              <i class="fas fa-share"></i>
+            </div>
           </div>
         } @empty {
-          <div class="sca-picker-empty">No se encontraron resultados</div>
+          <div class="sca-picker-empty">
+            <i class="fas fa-box-open"></i>
+            <p>No se encontraron artículos del usuario para este tipo</p>
+          </div>
         }
       </div>
     </div>
