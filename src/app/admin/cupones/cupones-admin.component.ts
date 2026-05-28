@@ -2,12 +2,14 @@ import { Component, OnInit, inject, signal, viewChild, ElementRef } from '@angul
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { debounceTime, Subject, distinctUntilChanged, switchMap, map } from 'rxjs';
 import { AdminCuponesService } from '../services/admin-cupones.service';
 import { AdminService } from '../admin.service';
 import { AdminCategoriasService } from '../services/admin-categorias.service';
 import { AdminCupon, CuponUso, CuponStats, PagedResult, AdminUsuario, AdminCategoria } from '../admin.models';
 import { Clipboard } from '@angular/cdk/clipboard';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-cupones-admin',
@@ -22,6 +24,7 @@ export class CuponesAdminComponent implements OnInit {
   private adminSvc = inject(AdminService);
   private catSvc = inject(AdminCategoriasService);
   private clipboard = inject(Clipboard);
+  private toast = inject(ToastService);
 
   // Data
   result = signal<PagedResult<AdminCupon> | null>(null);
@@ -234,12 +237,20 @@ export class CuponesAdminComponent implements OnInit {
     if (this.isNew) {
       this.cuponSvc.crear(payload).subscribe({
         next: () => this.onSaveSuccess(),
-        error: () => { /* Error toast shown by interceptor */ }
+        error: (err: HttpErrorResponse) => {
+          if (err.status === 409) {
+            this.toast.error(
+              `El código "${payload.codigo}" ya existe. Usa otro código.`,
+              'Código duplicado'
+            );
+          }
+          // For other errors, the global interceptor already shows a toast
+        }
       });
     } else {
       this.cuponSvc.editar(this.editingId!, payload).subscribe({
         next: () => this.onSaveSuccess(),
-        error: () => { /* Error toast shown by interceptor */ }
+        error: () => { /* interceptor toast */ }
       });
     }
   }
