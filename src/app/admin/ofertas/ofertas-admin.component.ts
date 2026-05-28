@@ -119,11 +119,16 @@ export class OfertasAdminComponent implements OnInit {
   }
 
   crearFlash(): void {
-    this.ofertaSvc.crearFlash(this.flashForm).subscribe(() => {
-      this.showFlashModal.set(false);
-      this.resetFlashForm();
-      this.estadoFiltro = ''; // Ir a "Todas" para ver la nueva
-      this.loadOfertas();
+    this.ofertaSvc.crearFlash(this.flashForm).subscribe({
+      next: () => {
+        this.showFlashModal.set(false);
+        this.resetFlashForm();
+        this.estadoFiltro = ''; // Ir a "Todas" para ver la nueva
+        this.loadOfertas();
+      },
+      error: () => {
+        // Error toast already shown by interceptor
+      }
     });
   }
 

@@ -100,8 +100,7 @@ export class SancionesComponent implements OnInit {
   setTab(t: 'ACTIVA' | 'HISTORICO'): void { this.tab.set(t); this.page = 0; this.load(); }
 
   load(): void {
-    const params: any = { page: this.page, size: 20 };
-    if (this.tab() === 'ACTIVA') params.estado = 'ACTIVA';
+    const params: any = { page: this.page, size: 20, estado: this.tab() };
     this.svc.getSanciones(params).subscribe({ next: r => this.result.set(r) });
   }
 

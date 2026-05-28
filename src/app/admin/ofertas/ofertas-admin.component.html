@@ -191,7 +191,7 @@
           <select [(ngModel)]="flashForm.categoriaId" class="modal-select">
             <option [ngValue]="null">Seleccionar...</option>
             @for (cat of categorias(); track cat.id) {
-              <option [value]="cat.id">{{ cat.nombre }}</option>
+              <option [ngValue]="cat.id">{{ cat.nombre }}</option>
             }
           </select>
         </div>

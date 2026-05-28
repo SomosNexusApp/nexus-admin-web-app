@@ -232,9 +232,15 @@ export class CuponesAdminComponent implements OnInit {
     };
 
     if (this.isNew) {
-      this.cuponSvc.crear(payload).subscribe(() => this.onSaveSuccess());
+      this.cuponSvc.crear(payload).subscribe({
+        next: () => this.onSaveSuccess(),
+        error: () => { /* Error toast shown by interceptor */ }
+      });
     } else {
-      this.cuponSvc.editar(this.editingId!, payload).subscribe(() => this.onSaveSuccess());
+      this.cuponSvc.editar(this.editingId!, payload).subscribe({
+        next: () => this.onSaveSuccess(),
+        error: () => { /* Error toast shown by interceptor */ }
+      });
     }
   }
 
